@@ -1,0 +1,401 @@
+﻿id,mELakartha,Name,Aroganam,Avaroganam,Aroganam Note Count,Avaroganam Note Count,Raasi,Melakartha_or_Janya,Krithi_IDs
+0,1,KanakAngi,S R1 G1 M1 P D1 N1 S^,S^ N1 D1 P M1 G1 R1 S,8,8,INDU,mELakartha-1,
+1,1,Kanakathodi,S R1 G1 M1 P D1 S^,S^ N1 D1 P M1 R1 S,7,7,INDU,Janya of MK-1,
+2,1,KarnAtaka Suddha Saveri,S R1 M1 P D1 S^,S^ D1 P M1 R1 S,6,6,INDU,Janya of MK-1,1114
+3,1,Tatillatika,S R1 M1 P D1 S^,S^ D1 P M1 R1 S,6,6,INDU,Janya of MK-1,
+4,1,VAgeeshwari,S R1 G1 M1 P D1 S^,S^ D1 M1 P G1 R1 S,7,7,INDU,Janya of MK-1,
+5,2,RathnAngi,S R1 G1 M1 P D1 N2 S^,S^ N2 D1 P M1 G1 R1 S,8,8,INDU,mELakartha-2,
+6,2,Phenadhyuti,S R1 M1 P D1 P N2 S^,S^ N2 D1 P M1 G1 R1 S,8,8,INDU,Janya of MK-2,
+7,2,Revathi,S R1 M1 P N2 S^,S^ N2 P M1 R1 S,6,6,INDU,Janya of MK-2,357;369;391;427;523;534;584;651;712;758;851;852;853
+8,3,GAnamoorti,S R1 G1 M1 P D1 N3 S^,S^ N3 D1 P M1 G1 R1 S,8,8,INDU,mELakartha-3,830;1033
+9,3,Bhinnapanchamam,S R1 G1 M1 P D1 N3 S^,S^ N3 D1 P M1 G1 R1 S,8,8,INDU,Janya of MK-3,
+10,4,Vanaspati,S R1 G1 M1 P D2 N2 S^,S^ N2 D2 P M1 G1 R1 S,8,8,INDU,mELakartha-4,
+11,4,VittalapriyA,S R1 M1 P D2 S^,S^ D2 P M1 R1 S,6,6,INDU,Janya of MK-4,
+12,5,MAnavathi,S R1 G1 M1 P D2 N3 S^,S^ N3 D2 P M1 G1 R1 S,8,8,INDU,mELakartha-5,
+13,6,TAnaroopi,S R1 G1 M1 P D3 N3 S^,S^ N3 D3 P M1 G1 R1 S,8,8,INDU,mELakartha-6,
+14,7,SenAvathi,S R1 G2 M1 P D1 N1 S^,S^ N1 D1 P M1 G2 R1 S,8,8,NETRA,mELakartha-7,
+15,7,Chitthakarshani,S R1 G2 M1 D1 S^,S^ D1 M1 G2 R1 S,6,6,NETRA,Janya of MK-7,
+16,7,Navarasa MAlA,S R1 G2 M1 P D1 S^,S^ N1 D1 P M1 R1 S,7,7,NETRA,Janya of MK-7,
+17,7,Sindhu Gowri,S R1 G2 M1 P D1 N1 S^,S^ N1 D1 M1 G2 M1 R1 S,8,8,NETRA,Janya of MK-7,
+18,8,Hanumathodi,S R1 G2 M1 P D1 N2 S^,S^ N2 D1 P M1 G2 R1 S,8,8,NETRA,mELakartha-8,84;94;150;159;168;226;232;267;283;310;311;373;405;428;751;762;1031;1081
+19,8,Janathodi,S R1 G2 M1 P D1 N2 S^,S^ N2 D1 P M1 G2 R1 S,8,8,NETRA,Janya of MK-8,
+20,8,Amritha DhanyAsi,S R1 G2 M1 P N2 S^,S^ N2 P M1 G2 R1 S,7,7,NETRA,Janya of MK-8,
+21,8,Bhadrathodi,S R1 G2 M1 D1 S^,S^ N2 D1 P G2 S,6,6,NETRA,Janya of MK-8,
+22,8,BhoopAlam,S R1 G2 P D1 S^,S^ D1 P G2 R1 S,6,6,NETRA,Janya of MK-8,102;103;858
+23,8,Chandrikathodi,S G2 M1 P D1 S^,S^ D1 P M1 G2 S,6,6,NETRA,Janya of MK-8,
+24,8,DivyamAlathi,S G2 M1 P D1 N2 S^,S^ N2 D1 P M1 G2 S,7,7,NETRA,Janya of MK-8,
+25,8,KalAsAveri,S R1 G2 P N2 S^,S^ N2 P G2 R1 S,6,6,NETRA,Janya of MK-8,
+26,8,PrabhupriyA,S G2 M1 P D1 S^,S^ D1 P M1 G2 S,6,6,NETRA,Janya of MK-8,
+27,8,Suddha Seemantini,S R1 G2 M1 P D1 S^,S^ D1 P M1 G2 R1 S,7,7,NETRA,Janya of MK-8,246
+28,8,Suddha Thodi,S R1 G2 M1 D1 N2 S^,S^ N2 D1 M1 G2 R1 S,7,7,NETRA,Janya of MK-8,
+29,9,Dhenuka,S R1 G2 M1 P D1 N3 S^,S^ N3 D1 P M1 G2 R1 S,8,8,NETRA,mELakartha-9,1071
+30,9,Udhaya Ravi CandrikA,S G2 M1 P N3 S^,S^ N3 P M1 G2 S,6,6,NETRA,Janya of MK-9,
+31,10,NAtakapriyA,S R1 G2 M1 P D2 N2 S^,S^ N2 D2 P M1 G2 R1 S,8,8,NETRA,mELakartha-10,1029
+32,10,NatAbharanam,S R1 G2 M1 P D2 N2 S^,S^ N2 D2 P M1 G2 R1 S,8,8,NETRA,Janya of MK-10,
+33,10,AlankArapriyA,S R1 G2 M1 D2 N2 S^,S^ N2 D2 M1 G2 R1 S,7,7,NETRA,Janya of MK-10,
+34,10,BhAgyashabari,S R1 G2 M1 D2 N2 S^,S^ N2 D2 M1 G2 R1 S,7,7,NETRA,Janya of MK-10,
+35,10,GunAvathi,S R1 M1 P D2 S^,S^ D2 P M1 R1 S,6,6,NETRA,Janya of MK-10,
+36,10,MAthangakAmini,S G2 M1 P D1 N2 S^,S^ N2 D1 P M1 G2 S,7,7,NETRA,Janya of MK-10,
+37,11,Kokilapriyaa,S R1 G2 M1 P D2 N3 S^,S^ N3 D2 P M1 G2 R1 S,8,8,NETRA,mELakartha-11,
+38,11,Vasanthamalli,S G2 M1 P N3 S^,S^ D2 P M1 G2 S,6,6,NETRA,Janya of MK-11,
+39,12,Roopavati,S R1 G2 M1 P D3 N3 S^,S^ N3 D3 P M1 G2 R1 S,8,8,NETRA,mELakartha-12,
+40,13,GAyakapriyA,S R1 G3 M1 P D1 N1 S^,S^ N1 D1 P M1 G3 R1 S,8,8,AGNI,mELakartha-13,
+41,13,Geya Hejjajji,S R1 M1 G3 M1 P D1 S^,S^ N3 D1 P M1 G3 R1 S,8,8,AGNI,Janya of MK-13,
+42,13,KalAkAnti,S R1 G3 M1 D1 N1 S^,S^ N1 D1 P G3 R1 S,7,7,AGNI,Janya of MK-13,
+43,14,VakulAbharanam,S R1 G3 M1 P D1 N2 S^,S^ N2 D1 P M1 G3 R1 S,8,8,AGNI,mELakartha-14,709
+44,14,VAtee Vasantabhairavi,S R1 G3 M1 D1 N2 S^,S^ N2 D1 M1 G3 R1 S,7,7,AGNI,Janya of MK-14,
+45,14,Amudhasurabhi,S M1 G3 M1 P D1 S^,S^ N2 D1 P M1 R1 S,7,7,AGNI,Janya of MK-14,
+46,14,Kalindaja,S R1 G3 M1 P N2 S^,S^ N2 P M1 G3 R1 S,7,7,AGNI,Janya of MK-14,
+47,14,Kuvalayabharanam,S R1 G3 M1 D1 N1 S^,S^ N1 D1 M1 G3 R1 S,7,7,AGNI,Janya of MK-14,
+48,14,Sallapa,S G3 M1 D1 N2 S^,S^ N2 D1 M1 G3 S,6,6,AGNI,Janya of MK-14,
+49,14,Suddha KAmbhoji,S G3 R1 M1 P N2 S^,S^ N2 P M1 G3 R1 S,7,7,AGNI,Janya of MK-14,
+50,14,Vasanthabhairavi,S R1 G3 M1 D1 N2 S^,S^ N2 D1 M1 G3 R1 S,7,7,AGNI,Janya of MK-14,256;674
+51,14,Vasantha MukhAri,S M1 G3 M1 P D1 N2 S^,S^ N2 D1 P M1 G3 R1 S,8,8,AGNI,Janya of MK-14,
+52,15,MAyamAlava Gowla,S R1 G3 M1 P D1 N3 S^,S^ N3 D1 P M1 G3 R1 S,8,8,AGNI,mELakartha-15,0;138;177;341;483;577;578;579;582;593;695;761;967;1013;1077;1087;1123;1140
+53,15,BhAvini,S G3 M1 P D1 N3 S^,S^ N3 D1 P M1 G3 S,7,7,AGNI,Janya of MK-15,
+54,15,BibhAs,S R1 G3 P D1 S^,S^ D1 P M1 R1 S,6,6,AGNI,Janya of MK-15,
+55,15,ChAruvardhani,S R1 M1 P D1 N3 S^,S^ D1 P M1 G3 R1 S,7,7,AGNI,Janya of MK-15,
+56,15,ChAyagowla,S R1 M1 G3 M1 P N3 S^,S^ N3 D1 P M1 G3 R1 S,8,8,AGNI,Janya of MK-15,691
+57,15,Chandrachooda,S M1 G3 M1 P D1 S^,S^ N3 D1 P M1 G3 S,7,7,AGNI,Janya of MK-15,
+58,15,Deshyagowla,S R1 P D1 N3 S^,S^ N3 D1 P R1 S,6,6,AGNI,Janya of MK-15,
+59,15,Gurjari,S R1 G3 M1 P D1 N3 S^,S^ D1 N3 P M1 G3 R1 S,8,8,AGNI,Janya of MK-15,125;296
+60,15,KalyAnakesari,S R1 G3 P D1 S^,S^ D1 P G3 R1 S,6,6,AGNI,Janya of MK-15,
+61,15,LalitA,S R1 G3 M1 D1 N3 S^,S^ N3 D1 M1 G3 R1 S,7,7,AGNI,Janya of MK-15,327;328;496;497;498;646;748
+62,15,MAlavakurinji,S G3 P D1 N3 S^,S^ N3 D1 M1 R1 S,6,6,AGNI,Janya of MK-15,
+63,15,Megharanjani,S R1 G3 M1 N3 S^,S^ N3 M1 G3 R1 S,6,6,AGNI,Janya of MK-15,
+64,15,Poornalalitha-5,S R1 G3 M1 P D1 S^,S^ D1 P M1 G3 R1 S,7,7,AGNI,Janya of MK-15,
+65,15,Revagupti,S R1 G3 P D1 S^,S^ D1 P G3 R1 S,6,6,AGNI,Janya of MK-15,149;209;297;849;850
+66,15,RukhmAmbari,S R1 G3 P N3 S^,S^ N3 P G3 R1 S,6,6,AGNI,Janya of MK-15,
+67,15,SAmanthadeepara,S R1 G3 M1 P N3 S^,S^ N3 P M1 G3 R1 S,7,7,AGNI,Janya of MK-15,
+68,15,SalanganAttai,S R1 M1 P D1 S^,S^ D1 P G3 R1 S,6,6,AGNI,Janya of MK-15,
+69,15,TArakagowla,S G3 M1 D1 N3 S^,S^ N3 D1 M1 G3 S,6,6,AGNI,Janya of MK-15,
+70,15,VishArada,S R1 M1 P N3 S^,S^ N3 P M1 R1 S,6,6,AGNI,Janya of MK-15,
+71,16,ChakravAkam,S R1 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R1 S,8,8,AGNI,mELakartha-16,134;135;136;215;1045
+72,16,ToyavegavAhini,S R1 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R1 S,8,8,AGNI,Janya of MK-16,
+73,16,BhujAngini,S R1 G3 M1 D2 N2 S^,S^ N2 D2 M1 G3 R1 S,7,7,AGNI,Janya of MK-16,
+74,16,BindhumAlini,S G3 R1 G3 M1 P N2 S^,S^ N2 S^ D2 P G3 R1 S,8,8,AGNI,Janya of MK-16,244
+75,16,ChakranArAyani,S R1 M1 P D2 N2 S^,S^ N2 D2 P M1 R1 S,7,7,AGNI,Janya of MK-16,
+76,16,KokilA,S R1 G3 M1 D2 N2 S^,S^ N2 D2 M1 G3 R1 S,7,7,AGNI,Janya of MK-16,
+77,16,MalayamArutham,S R1 G3 P D2 N2 S^,S^ N2 D2 P G3 R1 S,7,7,AGNI,Janya of MK-16,191;331;422;432;535;536;537;547;566
+78,16,MukthAngi,S R1 G3 M1 P D2 N2 S^,S^ D2 N2 P M1 G3 R1 S,8,8,AGNI,Janya of MK-16,
+79,16,MukundamAlini,S R1 G2 P D2 S^,S^ D2 P G2 R1 S,6,6,AGNI,Janya of MK-16,
+80,16,Pravritti,S G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 S,7,7,AGNI,Janya of MK-16,
+81,16,RAgamanjari,S R1 M1 P D2 S^,S^ N2 D2 M1 R1 S,6,6,AGNI,Janya of MK-16,
+82,16,Shree NabhomArgini,S G3 M1 P D2 N2 S^,S^ D2 P M1 G3 R1 S,7,7,AGNI,Janya of MK-16,
+83,16,SubhAshini,S D2 N2 D2 R1 G3 M1 P,M1 G3 R1 S N2 D2 N2 S,8,8,AGNI,Janya of MK-16,
+84,16,Valachi,S G3 P D2 N2 S^,S^ N2 D2 P G3 S,6,6,AGNI,Janya of MK-16,472;660;706;710;767;798;845;992;1108;1109;1110
+85,16,VegavAhini,S R1 G3 M1 D2 N2 D2 S^,S^ N2 D2 P M1 G3 R1 S,8,8,AGNI,Janya of MK-16,1088
+86,17,SooryakAntam,S R1 G3 M1 P D2 N3 S^,S^ N3 D2 P M1 G3 R1 S,8,8,AGNI,mELakartha-17,279
+87,17,Jayasamvardhani,S G3 M1 P D2 N3 S^,S^ N3 P M1 G3 R1 S,7,7,AGNI,Janya of MK-17,
+88,17,JeevantikA,S R1 M1 P D2 N3 S^,S^ N3 D2 P M1 R1 S,7,7,AGNI,Janya of MK-17,
+89,17,RohinA,S R1 G2 M1 M2 D2 N2 S^,S^ N2 D2 M2 M1 G2 R1 S,8,8,AGNI,Janya of MK-17,
+90,17,Suddha Gowla,S R1 M1 P N3 S^,S^ N3 P M1 R1 S,6,6,AGNI,Janya of MK-17,
+91,17,VasanthA,S M1 G3 M1 D2 N3 S^,S^ N3 D2 M1 G3 R1 S,7,7,AGNI,Janya of MK-17,258;368;371;388;402;436;440;452;511;616;1073;1125;1126;1127
+92,18,HatakAmbari,S R1 G3 M1 P D3 N3 S^,S^ N3 D3 P M1 G3 R1 S,8,8,AGNI,mELakartha-18,
+93,19,JhankAradhwani,S R2 G2 M1 P D1 N1 S^,S^ N1 D1 P M1 G2 R2 S,8,8,VEDA,mELakartha-19,
+94,19,BhArathi,S R2 G2 M1 P S^,S^ P M1 G2 R2 S,6,6,VEDA,Janya of MK-19,
+95,19,Poornalalitha-2,S G2 R2 G2 R2 M1 P S^,S^ N1 D1 P M1 G2 R2 S,8,8,VEDA,Janya of MK-19,
+96,20,Natabhairavi,S R2 G2 M1 P D1 N2 S^,S^ N2 D1 P M1 G2 R2 S,8,8,VEDA,mELakartha-20,363;524;662;663;897;1058
+97,20,NArArAthigowla,S R1 G2 M1 P D1 N2 S^,S^ R2 D1 P M1 G2 R2 S,8,8,VEDA,Janya of MK-20,
+98,20,AmrithavAhini,S R2 M1 P D1 N2 S^,S^ N2 D1 M1 G2 R2 S,7,7,VEDA,Janya of MK-20,1020;1022
+99,20,Bhairavi,S R2 G2 M1 P D2 N2 S^,S^ N2 D1 P M1 G2 R2 S,8,8,VEDA,Janya of MK-20,65;81;82;83;152;156;229;335;358;384;466;499;693;799;906;981;995;1062;1094;1095;1164
+100,20,GopikAvasantam,S R2 G2 M1 P D1 P N2,S^ N2 D1 P M1 G2 R2 S,8,8,VEDA,Janya of MK-20,
+101,20,Hindolam,S G2 M1 D1 N2 S^,S^ N2 D1 M1 G2 S,6,6,VEDA,Janya of MK-20,88;157;286;287;324;325;326;509;544;556;565;637;638;696;826;841;872;873;886;1163
+102,20,KAtyAyani,S R2 G2 P D2 S^,S^ D2 P G2 R2 S,6,6,VEDA,Janya of MK-20,
+103,20,Kshanika,S G2 M1 P D1 S^,S^ D1 P M1 G2 S,6,6,VEDA,Janya of MK-20,
+104,20,Mahathi-3,S P P D1 N2 S^,S^ N2 P G2 R2 S,6,6,VEDA,Janya of MK-20,
+105,20,Malkosh,S G2 M1 D1 N2 S^,S^ N2 D1 M1 G2 S,6,6,VEDA,Janya of MK-20,
+106,20,Navarathna VilAsam,S R2 G2 M1 P D1 P S^,S^ D1 P M1 G2 M1 R2 S,8,8,VEDA,Janya of MK-20,
+107,20,SharadapriyA,S R2 G2 P N2 S^,S^ N2 P G2 R2 S,6,6,VEDA,Janya of MK-20,
+108,20,Shree NavarasachandrikA,S R2 G2 M1 P D1 S^,S^ D1 P M1 G2 R2 S,7,7,VEDA,Janya of MK-20,
+109,20,Suddha SAlavi,S G2 M1 P N2 S^,S^ N2 P M1 R2 S,6,6,VEDA,Janya of MK-20,
+110,20,SukumAri,S G2 M1 P N2 D1 N2 S^,S^ N2 P M1 G2 M1 R2 S,8,8,VEDA,Janya of MK-20,
+111,20,Sushama,S R2 M1 P D1 S^,S^ D1 P M1 R2 S,6,6,VEDA,Janya of MK-20,
+112,20,UdayarAga,S G2 M1 P N2 S^,S^ N2 P M1 G2 S,6,6,VEDA,Janya of MK-20,
+113,21,KeeravAni,S R2 G2 M1 P D1 N3 S^,S^ N3 D1 P M1 G2 R2 S,8,8,VEDA,mELakartha-21,23;184;338;377;458;459;460;1121
+114,21,Aymmukhan,S G2 M1 P D1 N3 S^,S^ N3 D1 P M1 G2 S,7,7,VEDA,Janya of MK-21,
+115,21,BhAnupriya,S R2 G2 D1 N3 S^,S^ N3 D1 G2 R2 S,6,6,VEDA,Janya of MK-21,
+116,21,Chandrika,S R2 G2 P D1 N3 S^,S^ N3 D1 P G2 R2 S,7,7,VEDA,Janya of MK-21,
+117,21,GaganabhoopAlam,S M1 G2 M1 P D1 N3,S^ N3 D1 M1 G2 R2 S,7,7,VEDA,Janya of MK-21,
+118,21,HamsavAhini,S R2 M1 P D1 N3 S^,S^ N3 D1 P M1 R2 S,7,7,VEDA,Janya of MK-21,
+119,21,Kadaram (Chandra/ Chandrakowns),S G2 M1 D1 N3 S^,S^ N3 D1 M1 G2 S,6,6,VEDA,Janya of MK-21,
+120,21,Priyadarshani,S R2 M1 D1 N3 S^,S^ N3 D1 M1 R2 S,6,6,VEDA,Janya of MK-21,
+121,21,SAmapriyA,S R2 M1 P D1 S^,S^ D1 P M1 R2 S,6,6,VEDA,Janya of MK-21,
+122,21,Shrothasvini,S G2 M1 P N3 S^,S^ N3 P M1 G2 S,6,6,VEDA,Janya of MK-21,
+123,21,Vasanthamanohari,S R2 G2 M1 D1 N3 S^,S^ N3 D1 M1 G2 R2 S,7,7,VEDA,Janya of MK-21,
+124,22,Kharaharapriya,S R2 G2 M1 P D2 N2 S^,S^ N2 D2 P M1 G2 R2 S,8,8,VEDA,mELakartha-22,45;133;353;461;462;463;474;719;729;752;777;806;809;914;923
+125,22,Abhogi,S R2 G2 M1 D2 S^,S^ D2 M1 G2 R2 S,6,6,VEDA,Janya of MK-22,5;6;263;551;553;645;856;1008
+126,22,BAlachandrika,S G2 M1 P D2 N2 S^,S^ N2 D2 M1 G2 R2 S,7,7,VEDA,Janya of MK-22,
+127,22,BrindAvani,S R2 M1 P N3 S^,S^ N2 P M1 R2 S,6,6,VEDA,Janya of MK-22,
+128,22,Chitta Ranjani,S R2 G2 M1 P D2 N2,N2 D2 P M1 G2 R2 S,7,7,VEDA,Janya of MK-22,153
+129,22,Dayavati,S R2 G2 P N2 S^,S^ N2 P M1 G2 S,6,6,VEDA,Janya of MK-22,
+130,22,DevAmruthavarshani,S R2 G2 M1 N2 D2 N2 S^,S^ N2 D2 P M1 G2 R2 S,8,8,VEDA,Janya of MK-22,487
+131,22,Hamsa Abheri,S G2 P M1 P N2 S^,S^ N2 D2 P M1 G2 S,7,7,VEDA,Janya of MK-22,
+132,22,Kalika,S R2 G2 P D2 N2 S^,S^ N2 D2 P G2 R2 S,7,7,VEDA,Janya of MK-22,
+133,22,Kannadagowla,S R2 G2 M1 P N2 S^,S^ N2 D2 P M1 G2 S,7,7,VEDA,Janya of MK-22,411;412;690
+134,22,KarnAtaka Hindolam,S G2 M1 D2 N2 S^,S^ N2 D2 M1 G2 S,6,6,VEDA,Janya of MK-22,
+135,22,KarnAtaka KApi,S R2 G2 M1 P D2 N2 S^,S^ N2 D2 P M1 G2 R2 S,8,8,VEDA,Janya of MK-22,1097
+136,22,Karnaranjani,S R2 G2 M1 G2 P D2 S^,S^ N2 D2 P M1 G2 R2 S,8,8,VEDA,Janya of MK-22,430;431;896;1113
+137,22,Lalitamanohari,S G2 M1 P D2 N2 S^,S^ N2 P M1 G2 R2 S,7,7,VEDA,Janya of MK-22,
+138,22,MadhyamarAvali,S R2 G2 P D2 N2 S^,S^ N2 D2 P G2 R2 S,7,7,VEDA,Janya of MK-22,
+139,22,MadhyamAvathi,S R2 M1 P N2 S^,S^ N2 P M1 R2 S,6,6,VEDA,Janya of MK-22,10;16;18;116;192;433;519;520;521;627;631;632;730;822;880;904
+140,22,MahAnandhi,S R2 G2 P D2 S^,S^ D2 P G2 R2 S,6,6,VEDA,Janya of MK-22,
+141,22,Manorama,S R2 G2 M1 P D1 P S^,S^ N2 D1 P M1 G2 R2 S,8,8,VEDA,Janya of MK-22,
+142,22,Moorthee,S G2 M1 D2 N2 S^,S^ N2 D2 M1 G2 S,6,6,VEDA,Janya of MK-22,
+143,22,NAdachintAmani,S R2 G2 M1 N2 D2 N2 S^,S^ N2 D2 P M1 G2 R2 S,8,8,VEDA,Janya of MK-22,
+144,22,NAgari,S R2 M1 P D2 N2 S^,S^ N2 D2 P M1 G2 S,7,7,VEDA,Janya of MK-22,
+145,22,NAgavalli,S R2 M1 D2 N2 S^,S^ N2 D2 M1 R2 S,6,6,VEDA,Janya of MK-22,
+146,22,NigamagAmini,M1 G2 S^ G2 M1 N2 S^,S^ N2 M1 G2 M1 G2 S,7,7,VEDA,Janya of MK-22,
+147,22,NirmalAngi,S R2 M1 P N2 S^,S^ N2 P M1 R2 S,6,6,VEDA,Janya of MK-22,
+148,22,OmkAri,S R2 G2 M1 P D2 S^,S^ D2 P M1 G2 R2 S,7,7,VEDA,Janya of MK-22,
+149,22,PoornakalAnidhi,S G2 M1 P D2 N2 S^,S^ D2 P M1 G2 R2 S,7,7,VEDA,Janya of MK-22,
+150,22,Pushpalathika,S R2 G2 M1 P N2 S^,S^ N2 P M1 G2 R2 S,7,7,VEDA,Janya of MK-22,
+151,22,Ratipatipriya,S R2 G2 P N2 S^,S^ N2 P G2 R2 S,6,6,VEDA,Janya of MK-22,
+152,22,SArang,S R2 M1 P N2 S^,S^ N2 P M1 R2 S,6,6,VEDA,Janya of MK-22,
+153,22,SankrAndanapriyA,S R2 G2 P D2 S^,S^ D2 P G2 R2 S,6,6,VEDA,Janya of MK-22,
+154,22,ShivapriyA,S R2 G2 P D2 S^,S^ D2 P G2 R2 S,6,6,VEDA,Janya of MK-22,
+155,22,Shivaranjani,S R2 G2 P D2 S^,S^ D2 P G2 R2 S,6,6,VEDA,Janya of MK-22,733;934;935;936
+156,22,Shree Ranjani,S R2 G2 M1 D2 N2 S^,S^ N2 D2 M1 G2 R2 S,7,7,VEDA,Janya of MK-22,1;606;708;831;939;940;941;975;1001
+157,22,Suddha Bhairavi,S G2 M1 P N2 D2 S^,S^ N2 D2 M1 G2 R2 S,7,7,VEDA,Janya of MK-22,
+158,22,Suddha Hindolam,S G2 M1 D2 N2 S^,S^ N2 D2 M1 G2 S,6,6,VEDA,Janya of MK-22,
+159,22,Suddha Manohari,S R2 G2 M1 P D2 S^,S^ N2 P M1 R2 G2 S,7,7,VEDA,Janya of MK-22,
+160,22,Swarabhooshani,S G2 M1 P D2 N2 S^,S^ N2 D2 P M1 R2 S,7,7,VEDA,Janya of MK-22,
+161,23,Gowri Manohari,S R2 G2 M1 P D2 N3 S^,S^ N3 D2 P M1 G2 R2 S,8,8,VEDA,mELakartha-23,291;292;293;604;1063;1068
+162,23,Hrudkamali,S R2 M1 D2 N3 S^,S^ N3 D2 M1 R2 S,6,6,VEDA,Janya of MK-23,
+163,23,Lavanthika,S R2 M1 P N3 S^,S^ N3 P M1 R2 S,6,6,VEDA,Janya of MK-23,
+164,23,Vasantashree (Amba Manohari),S R2 G2 M1 D2 N3 S^,S^ N3 D2 M1 G2 R2 S,7,7,VEDA,Janya of MK-23,
+165,23,VelAvali-3,S R2 G2 M1 P D2 S^,S^ N3 D2 P M1 G2 S,7,7,VEDA,Janya of MK-23,
+166,24,Varunapriyaa,S R2 G2 M1 P D3 N3 S^,S^ N3 D3 P M1 G2 R2 S,8,8,VEDA,mELakartha-24,
+167,25,MAraranjani,S R2 G3 M1 P D1 N1 S^,S^ N1 D1 P M1 G3 R2 S,8,8,BANA,mELakartha-25,
+168,25,Jana Sammodhini-1,S R2 G3 P D1 S^,S^ D1 P G3 R2 S,6,6,BANA,Janya of MK-25,
+169,25,RAjathilaka,S R2 G3 M1 P S^,S^ P M1 G3 R2 S,6,6,BANA,Janya of MK-25,
+170,26,ChArukeshi,S R2 G3 M1 P D1 N2 S^,S^ N2 D1 P M1 G3 R2 S,8,8,BANA,mELakartha-26,8;9;143;144;145;477
+171,26,Chirswaroopi,S R2 G3 M1 P D1 N2 S^,S^ N2 D1 P M1 G3 R2 S,8,8,BANA,Janya of MK-26,
+172,26,Shiva Manohari,S M1 G3 M1 P D1 N2 S^,S^ N2 D1 P M1 G3 R2 S,8,8,BANA,Janya of MK-26,
+173,26,Shukrajyothi,S R2 G3 M1 P D1 N2 S^,S^ N2 P D1 M1 G3 R2 S,8,8,BANA,Janya of MK-26,
+174,27,SarasAngi,S R2 G3 M1 P D1 N3 S^,S^ N3 D1 P M1 G3 R2 S,8,8,BANA,mELakartha-27,
+175,27,Madhulika,S R2 G3 M1 N3 S^,S^ N3 M1 G3 R2 S,6,6,BANA,Janya of MK-27,
+176,27,NalinakAnthi,S G3 R2 M1 P N3 S^,S^ N3 P M1 G3 R2 S,7,7,BANA,Janya of MK-27,280;633;634;635;1016;1023
+177,27,Neelamani,S R2 M1 P D1 N3 S^,S^ N3 D1 P M1 R2 S,7,7,BANA,Janya of MK-27,
+178,27,SarasAnana,S R2 G3 M1 D1 N3 S^,S^ N3 D1 M1 G3 R2 S,7,7,BANA,Janya of MK-27,
+179,27,Vasanthi,S R2 G3 P D1 S^,S^ D1 P G3 R2 S,6,6,BANA,Janya of MK-27,538;924;1128;1129
+180,28,HarikAmbhoji,S R2 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,mELakartha-28,60;142;201;233;248;314;315;316
+181,28,HarikedAragowla,S R2 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-28,
+182,28,AndolikA,S R2 M1 P N2 S^,S^ N2 D2 M1 R2 S,6,6,BANA,Janya of MK-28,35;36;788;926;927
+183,28,Ambhojini,S R2 G3 M1 D2 S^,S^ D2 M1 G3 R2 S,6,6,BANA,Janya of MK-28,
+184,28,BhoopAli,S R2 G3 P D2 S^,S^ D2 P G3 R2 S,6,6,BANA,Janya of MK-28,
+185,28,ChAyalagakhamAs,S M1 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-28,
+186,28,ChAyatArangini,S R2 M1 G3 M1 P N2 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-28,
+187,28,Chandrahasitham,S R2 G3 M1 D2 N2 S^,S^ N2 D2 M1 G3 R2 S,7,7,BANA,Janya of MK-28,
+188,28,Dayaranjani,S R2 M1 P D2 S^,S^ N2 D2 M1 G3 S,6,6,BANA,Janya of MK-28,
+189,28,DeshkAr,S R2 G3 P D2 S^,S^ D2 P G3 R2 S,6,6,BANA,Janya of MK-28,
+190,28,Eeshaivaridhi,S R2 M1 D2 N2 S^,S^ N2 P M1 R2 S,6,6,BANA,Janya of MK-28,
+191,28,Guhamanohari,S R2 M1 D2 N2 S^,S^ N2 D2 M1 R2 S,6,6,BANA,Janya of MK-28,
+192,28,Guharanjani,S R2 S^ M1 P D2 N2 S^,S^ N2 D2 N2 P M1 G3 S,8,8,BANA,Janya of MK-28,
+193,28,Hamsaroopini,S R2 G3 P D2 S^,S^ N2 P M1 R2 S,6,6,BANA,Janya of MK-28,
+194,28,Jaithshree,S R2 G3 P D2 S^,S^ D2 P G3 R2 S,6,6,BANA,Janya of MK-28,
+195,28,Jana Sammodhini-2,S R2 G3 P D2 N2 S^,S^ N2 D2 P G3 R2 S,7,7,BANA,Janya of MK-28,
+196,28,KamAs,S M1 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-28,122;329;394;395;396;471;802;854;920;922;1028;1046
+197,28,KarnAtaka KhamAs,S G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 S,7,7,BANA,Janya of MK-28,
+198,28,KeshavapriyA,S R2 S^ M1 P D2 N2 S^,S^ N2 S P M1 G3 R2 S,8,8,BANA,Janya of MK-28,
+199,28,Kokiladhwani,S R2 G3 M1 D2 N2 D2 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-28,257;743
+200,28,Madhurakokila,S R2 G3 D2 N2 S^,S^ N2 D2 G3 R2 S,6,6,BANA,Janya of MK-28,
+201,28,Mattakokila,S R2 P D2 N2 D2 S^,S^ D2 N2 D2 P R2 S,7,7,BANA,Janya of MK-28,
+202,28,Mohanam,S R2 G3 P D2 S^,S^ D2 P G3 R2 S,6,6,BANA,Janya of MK-28,7;96;104;228;261;346;421;500;598;599;600;601;650;656;728;812;813;814;840;925;954;1057
+203,28,NAdavalli,S R2 M1 D2 N2 S^,S^ N2 D2 M1 R2 S,6,6,BANA,Janya of MK-28,
+204,28,NAgaswarAvali,S G3 M1 P D2 S^,S^ D2 P M1 G3 S,6,6,BANA,Janya of MK-28,628;629;909
+205,28,Neela,S G3 M1 D2 N2 S^,S^ N2 D2 M1 G3 S,6,6,BANA,Janya of MK-28,
+206,28,PashupathipriyA,S R2 M1 P M1 D2 S^,S^ D2 M1 P R2 M1 S,7,7,BANA,Janya of MK-28,
+207,28,PoornakAmbhoji,S R2 G3 M1 P N2 S^,S^ D2 P M1 G3 R2 S,7,7,BANA,Janya of MK-28,
+208,28,PratApavarAli,S R2 M1 P D2 P S^,S^ D2 P M1 G3 R2 S,7,7,BANA,Janya of MK-28,
+209,28,Pravalajyoti,S R2 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 S,7,7,BANA,Janya of MK-28,
+210,28,RAgavinodini,S R2 G3 M1 D2 S^,S^ D2 M1 G3 R2 S,6,6,BANA,Janya of MK-28,
+211,28,SAvithri,S G3 M1 P N2 S^,S^ N2 P M1 G3 S,6,6,BANA,Janya of MK-28,
+212,28,Shankaraharigowla-1,S R2 G3 M1 P D2 N3 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-28,
+213,28,Suddha KhamAs,S M1 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-28,
+214,28,SumanapriyA,S R2 G3 M1 P D2 P S^,S^ D2 S P M1 G3 R2 S,8,8,BANA,Janya of MK-28,
+215,28,Thilang-1,S G3 M1 P N3 S^,S^ N2 P M1 G3 S,6,6,BANA,Janya of MK-28,37;67;829;931;1074;1075;1076
+216,28,Vaishnavi,S R2 G3 M1 P D2 S^,S^ D2 P M1 G3 R2 S,7,7,BANA,Janya of MK-28,
+217,28,Veenavadini,S R2 G3 P N2 S^,S^ N2 P G2 R2 S,6,6,BANA,Janya of MK-28,
+218,29,Dheera ShankarAbharanam,S R2 G3 M1 P D2 N3 S^,S^ N3 D2 P M1 G3 R2 S,8,8,BANA,mELakartha-29,15;39;93;160;196;197;198;214;527;725;754;817;882;1003
+219,29,Anandharoopa,S R2 G3 P D2 N3 S^,S^ N3 D2 P G3 R2 S,7,7,BANA,Janya of MK-29,
+220,29,BehAg,S G3 M1 P N3 D2 N3 S^,S^ N3 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-29,12;73;74;75;618;1009
+221,29,Dharmalakhi,S M1 P D2 N3 S^,S^ N3 D2 P M1 S,6,6,BANA,Janya of MK-29,
+222,29,GowdamallAr,S R2 M1 P D2 S^,S^ N3 M1 G3 R2 S,6,6,BANA,Janya of MK-29,262;895
+223,29,Hamsadhwani,S R2 G3 P N3 S^,S^ N3 P G3 R2 S,6,6,BANA,Janya of MK-29,272;302;303;304;507;546;552;603;610;756;782;790;791;1017;1099;1131;1136;1149
+224,29,Julavu,P D2 N3 S^ R2 G3 M1 P,M1 G3 R2 S N3 D2 P M1,8,8,BANA,Janya of MK-29,
+225,29,Kathanakuthoohalam,S R2 M1 D2 N3 G3 P S^,S^ N3 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-29,253;450;451;617
+226,29,KedAram,S M1 G3 M1 P N3 S^,S^ N3 P M1 G3 R2 S,7,7,BANA,Janya of MK-29,30;455;456;457;805;807;808;887;1086;1138
+227,29,KokilabhAshani,S R2 G3 M1 P D2 N3 S^,S^ N3 P M1 G3 M1 R2 S,8,8,BANA,Janya of MK-29,
+228,29,Kurinji,S N3 S^ R2 G3 M1 P D2,D2 P M1 G3 R2 S N3 S,8,8,BANA,Janya of MK-29,480;488;494;605;918;1032
+229,29,Kutuhala,S R2 M1 N3 D2 P N3 S^,S^ N3 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-29,
+230,29,Niroshta,S R2 G3 D2 N3 S^,S^ N3 D2 G3 R2 S,6,6,BANA,Janya of MK-29,
+231,29,Rathnabhooshani,S R2 G3 M1 P S^,S^ P M1 G3 R2 S,6,6,BANA,Janya of MK-29,
+232,29,ReetuvilAsa,S G3 M1 P D2 N3 S^,S^ N3 D2 P M1 G3 S,7,7,BANA,Janya of MK-29,
+233,29,Shankaraharigowla-2,S R2 G3 M1 P D2 N3 S^,S^ N2 D2 P M1 G3 R2 S,8,8,BANA,Janya of MK-29,
+234,29,Suddha SAveri,S R2 M1 P D2 S^,S^ D2 P M1 R2 S,6,6,BANA,Janya of MK-29,95;239;322;1025;1039;1040;1041
+235,29,Suranandini,S R2 G3 P D2 N3 S^,S^ N3 D2 P G3 R2 S,7,7,BANA,Janya of MK-29,
+236,29,TAndavam,S G3 P D2 N3 S^,S^ N3 D2 P G3 S,6,6,BANA,Janya of MK-29,
+237,29,Vasanthamalai,S R2 M1 P N3 S^,S^ D2 P M1 R2 S,6,6,BANA,Janya of MK-29,
+238,29,VedhAndhagamana,S G3 M1 P N3 S^,S^ N3 P M1 G3 S,6,6,BANA,Janya of MK-29,
+239,29,VilAsini,S R2 G3 M1 P N3 S^,S^ N3 P M1 G3 R2 S,7,7,BANA,Janya of MK-29,
+240,30,NAganandhini,S R2 G3 M1 P D3 N3 S^,S^ N3 D3 P M1 G3 R2 S,8,8,BANA,mELakartha-30,
+241,30,NAgabharanam,S R2 G2 M1 P D3 N3 S^,S^ N3 D3 P M1 G2 R2 S,8,8,BANA,Janya of MK-30,
+242,30,Thilang-2,S G3 M1 P N3 S^,S^ N2 P M1 G3 S,6,6,BANA,Janya of MK-30,
+243,31,YAgapriyA,S R3 G3 M1 P D1 N1 S^,S^ N1 D1 P M1 G3 R3 S,8,8,RUTHU,mELakartha-31,
+244,31,KalAvathi,S R3 G3 M1 P D1 N1 S^,S^ N1 D1 P M1 G3 R3 S,8,8,RUTHU,Janya of MK-31,
+245,31,Damarugapriya,S R3 G3 P D1 N1 S^,S^ N1 D1 P G3 R3 S,7,7,RUTHU,Janya of MK-31,
+246,31,Desharanjani,S R3 M1 P D1 N1 S^,S^ N1 D1 P M1 R3 S,7,7,RUTHU,Janya of MK-31,
+247,31,Niranjani,S R3 M1 D1 N1 S^,S^ N1 D1 M1 R3 S,6,6,RUTHU,Janya of MK-31,
+248,32,RAgavardhani,S R3 G3 M1 P D1 N2 S^,S^ N2 D1 P M1 G3 R3 S,8,8,RUTHU,mELakartha-32,
+249,32,RAgachoodAmani,S R3 G3 M1 P N2 S^,S^ N2 D1 M1 R3 G3 S,7,7,RUTHU,Janya of MK-32,
+250,33,Gangeyabhooshani,S R3 G3 M1 P D1 N3 S^,S^ N3 D1 P M1 G3 R3 S,8,8,RUTHU,mELakartha-33,859
+251,34,VAgadeeshwari,S R3 G3 M1 P D2 N2 S^,S^ N2 D2 P M1 G3 R3 S,8,8,RUTHU,mELakartha-34,648
+252,34,ChAyanAttai,S R3 G3 M1 P M1 P S^,S^ N2 D2 N2 P M1 R3 S,8,8,RUTHU,Janya of MK-34,
+253,34,Maghathi,S R3 M1 P D2 N2 S^,S^ N2 D2 P M1 R3 S,7,7,RUTHU,Janya of MK-34,
+254,34,Murali,S R3 G3 M1 D2 N2 S^,S^ N2 D2 M1 G3 R3 S,7,7,RUTHU,Janya of MK-34,
+255,34,Vikhavathi,S R3 G3 P D2 S^,S^ D2 P G3 R3 S,6,6,RUTHU,Janya of MK-34,
+256,35,Shoolini,S R3 G3 M1 P D2 N3 S^,S^ N3 D2 P M1 G3 R3 S,8,8,RUTHU,mELakartha-35,
+257,36,CalanAttai,S R3 G3 M1 P D3 N3 S^,S^ N3 D3 P M1 G3 R3 S,8,8,RUTHU,mELakartha-36,130;131;132;213
+258,36,GambheeranAttai,S G3 M1 P N3 S^,S^ N3 P M1 G3 S,6,6,RUTHU,Janya of MK-36,269;270;449;588;953;998;1000;1152
+259,37,SAlagam,S R1 G1 M2 P D1 N1 S^,S^ N1 D1 P M2 G1 R1 S,8,8,RISHI,mELakartha-37,
+260,38,JalArnavam,S R1 G1 M2 P D1 N2 S^,S^ N2 D1 P M2 G1 R1 S,8,8,RISHI,mELakartha-38,
+261,38,Jaganmohinam,S R1 G1 M2 P D1 N2 S^,S^ N2 D1 P M2 G1 R1 S,8,8,RISHI,Janya of MK-38,
+262,39,JhAlavarAli,S R1 G1 M2 P D1 N3 S^,S^ N3 D1 P M2 G1 R1 S,8,8,RISHI,mELakartha-39,
+263,39,DhAlivarAli,S R1 G1 M2 P D1 N3 S^,S^ N3 D1 P M2 G1 R1 S,8,8,RISHI,Janya of MK-39,
+264,39,JAlasugandhi,S R1 G1 M2 P D1 S^,S^ D1 P M2 G1 R1 S,7,7,RISHI,Janya of MK-39,
+265,39,Kokilapanchamam,S G1 R1 G1 P D1 N3 S^,S^ N3 D1 P M2 G1 R1 S,8,8,RISHI,Janya of MK-39,
+266,40,Navaneetham,S R1 G1 M2 P D2 N2 S^,S^ N2 D2 P M2 G1 R1 S,8,8,RISHI,mELakartha-40,
+267,41,PAvani,S R1 G1 M2 P D2 N3 S^,S^ N3 D2 P M2 G1 R1 S,8,8,RISHI,mELakartha-41,
+268,41,Chandrajyothi,S R1 G1 M2 P D2 S^,S^ D2 P M2 G1 R1 S,7,7,RISHI,Janya of MK-41,62;139;140;913
+269,42,Raghupriyaa,S R1 G1 M2 P D3 N3 S^,S^ N3 D3 P M2 G1 R1 S,8,8,RISHI,mELakartha-42,
+270,43,GhavAmbhodi,S R1 G2 M2 P D1 N1 S^,S^ N1 D1 P M2 G2 R1 S,8,8,VASU,mELakartha-43,
+271,43,KeervAni,S R1 G2 M2 P D1 N1 S^,S^ N1 D1 P M2 G2 R1 S,8,8,VASU,Janya of MK-43,
+272,43,Mahathi-2,S G2 M2 P D1 N1 S^,S^ N1 D1 P M2 G2 S,7,7,VASU,Janya of MK-43,
+273,43,Suvarnadeepakam,S R1 G2 M2 P D1 S^,S^ D1 P M2 G2 R1 S,7,7,VASU,Janya of MK-43,
+274,44,Bhavapriya,S R1 G2 M2 P D1 N2 S^,S^ N2 D1 P M2 G2 R1 S,8,8,VASU,mELakartha-44,1005
+275,44,KanchanAvathi,S R1 G2 M2 P N2 S^,S^ N2 P M2 G2 R1 S,7,7,VASU,Janya of MK-44,
+276,45,ShubhapanthuvarAli,S R1 G2 M2 P D1 N3 S^,S^ N3 D1 P M2 G2 R1 S,8,8,VASU,mELakartha-45,105;121;268;337;404;948;949;1034
+277,45,ShivapanthuvarAli,S R1 G2 M2 P D1 N3 S^,S^ N3 D1 P M2 G2 R1 S,8,8,VASU,Janya of MK-45,
+278,45,Parpathi,S G2 M2 P N3 S^,S^ N3 P M2 G2 S,6,6,VASU,Janya of MK-45,
+279,45,ShekharachandrikA,S R1 G2 M2 D1 N3 S^,S^ N3 D1 M2 G2 R1 S,7,7,VASU,Janya of MK-45,
+280,46,ShadvidhamArgini,S R1 G2 M2 P D2 N2 S^,S^ N2 D2 P M2 G2 R1 S,8,8,VASU,mELakartha-46,429;614
+281,46,SthavarAjam,S R1 M2 P D2 S^,S^ N2 D2 M2 G2 S,6,6,VASU,Janya of MK-46,
+282,46,ShreekAnti,S G2 M2 P D2 N2 S^,S^ N2 D2 P M2 G2 S,7,7,VASU,Janya of MK-46,
+283,47,SuvarnAngi,S R1 G2 M2 P D2 N3 S^,S^ N3 D2 P M2 G2 R1 S,8,8,VASU,mELakartha-47,
+284,47,Sowveeram,S R1 G2 M2 P D2 N3 S^,S^ N3 D2 P M2 G2 R1 S,8,8,VASU,Janya of MK-47,
+285,47,Abhiru,S R1 G2 R1 M2 P N3 S^,S^ D2 P M2 G2 R1 G2 S,8,8,VASU,Janya of MK-47,
+286,47,RathikA,S M2 G2 M2 P D2 N3 S^,S^ N3 D2 P M2 G2 R1 S,8,8,VASU,Janya of MK-47,
+287,47,Vijayashree,S R1 G2 M2 P N2 S^,S^ N2 P M2 G2 R1 S,7,7,VASU,Janya of MK-47,820
+288,48,Divyamani,S R1 G2 M2 P D3 N3 S^,S^ N3 D3 P M2 G2 R1 S,8,8,VASU,mELakartha-48,
+289,48,JeevanthikA,S M2 P D3 N3 S^,S^ N3 P M2 G2 S,6,6,VASU,Janya of MK-48,
+290,48,Jeevanthini,S M2 P D3 N3 S^,S^ N3 P M2 G2 S,6,6,VASU,Janya of MK-48,
+291,49,DhavalAmbari,S R1 G3 M2 P D1 N1 S^,S^ N1 D1 P M2 G3 R1 S,8,8,BRAHMA,mELakartha-49,
+292,49,Bhinnapauarali,S M2 P D1 N1 D1 S^,S^ N1 D1 P M2 G3 S,7,7,BRAHMA,Janya of MK-49,
+293,49,Dharmini,S R1 G3 M2 D1 N1 S^,S^ N1 D1 M2 G3 R1 S,7,7,BRAHMA,Janya of MK-49,
+294,49,Sudharmini,S R1 M2 P D1 N1 S^,S^ N1 D1 M1 G3 R2 S,7,7,BRAHMA,Janya of MK-49,
+295,50,NAmanArAyani,S R1 G3 M2 P D1 N2 S^,S^ N2 D1 P M2 G3 R1 S,8,8,BRAHMA,mELakartha-50,
+296,50,NAmadeshi,S R1 G3 M2 P D1 N2 S^,S^ N2 D1 P M2 G3 R1 S,8,8,BRAHMA,Janya of MK-50,
+297,50,MandAri,S R1 G3 M2 P N2 S^,S^ N2 P M2 G3 R1 S,7,7,BRAHMA,Janya of MK-50,561;562;707;744
+298,51,PanthuvarAli (KAmavardhani),S R1 G3 M2 P D1 N3 S^,S^ N3 D1 P M2 G3 R1 S,8,8,BRAHMA,mELakartha-51,46;237;597;655;705;736;737;738;759;793;825;855;875;912;968;1098;1105
+299,51,Bhogavasantha,S R1 G3 M2 D1 N3 S^,S^ N3 D1 M2 G3 R1 S,7,7,BRAHMA,Janya of MK-51,
+300,51,KamalAptapriyA,S R1 G3 M2 P D1 S^,S^ D1 P M2 G3 R1 S,7,7,BRAHMA,Janya of MK-51,
+301,51,TAndavapriyA,S R1 G3 M2 P S^,S^ P M2 G3 R1 S,6,6,BRAHMA,Janya of MK-51,
+302,52,RAmapriyA,S R1 G3 M2 P D2 N2 S^,S^ N2 D2 P M2 G3 R1 S,8,8,BRAHMA,mELakartha-52,334;367;827;828
+303,52,Chintaramani,S G3 M2 P D2 N2 S^,S^ D2 P M2 G3 R1 S,7,7,BRAHMA,Janya of MK-52,
+304,52,PatalAmbari,S R1 G3 M2 D2 S^,S^ D2 M2 G3 R1 S,6,6,BRAHMA,Janya of MK-52,
+305,52,Rasavinodini,S G3 M2 P D2 N2 S^,S^ N2 D2 P M2 G3 S,7,7,BRAHMA,Janya of MK-52,
+306,52,SeemantinipriyA,S R1 G3 M2 D2 N2 S^,S^ N2 D2 M2 G3 R1 S,7,7,BRAHMA,Janya of MK-52,
+307,53,Gamanashramaa,S R1 G3 M2 P D2 N3 S^,S^ N3 D2 P M2 G3 R1 S,8,8,BRAHMA,mELakartha-53,
+308,53,HamsAnandi,S R1 G3 M2 D2 N3 S^,S^ N3 D2 M2 G3 R1 S,7,7,BRAHMA,Janya of MK-53,308;309;681;726;766;779;980;1015
+309,53,Poorvi KalyAni,S R1 G3 M2 P D2 P S^,S^ N3 D2 P M2 G3 R1 S,8,8,BRAHMA,Janya of MK-53,29;97;178;242;284;484;506;714;745;774;775;776;991
+310,54,VishvAmbhari,S R1 G3 M2 P D3 N3 S^,S^ N3 D3 P M2 G3 R1 S,8,8,BRAHMA,mELakartha-54,
+311,54,HemAngi,S R1 G3 M2 D3 S^,S^ D3 M2 G3 R1 S,6,6,BRAHMA,Janya of MK-54,
+312,54,SuddhakriyA,S R1 M2 M2 P D3 S^,S^ D3 P M2 G3 R1 S,7,7,BRAHMA,Janya of MK-54,
+313,54,SundarAngi,S R1 G3 P D3 N3 S^,S^ N3 D3 P G3 R1 S,7,7,BRAHMA,Janya of MK-54,
+314,54,Vijayavasantham,S M2 P D3 N3 S^,S^ N3 P M2 G3 S,6,6,BRAHMA,Janya of MK-54,
+315,55,ShyAmalAngi,S R2 G2 M2 P D1 N1 S^,S^ N1 D1 P M2 G2 R2 S,8,8,DISI,mELakartha-55,
+316,55,ShyAmalam,S R2 G2 M2 P D1 N1 S^,S^ N1 D1 P M2 G2 R2 S,8,8,DISI,Janya of MK-55,
+317,56,Shanmukhapriyaa,S R2 G2 M2 P D1 N2 S^,S^ N2 D1 P M2 G2 R2 S,8,8,DISI,mELakartha-56,227;234;526;529;554;619;815;879;885;911;928;929;930
+318,56,ChAmaram,S R2 G2 M2 P D1 N2 S^,S^ N2 D1 P M2 G2 R2 S,8,8,DISI,Janya of MK-56,528
+319,56,Dhanakari,S G2 P D1 N2 S^,S^ N2 D1 M2 G2 S,6,6,DISI,Janya of MK-56,
+320,56,Gopikathilakam,S R2 G2 M2 P N2 S^,S^ N2 P M2 G2 R2 S,7,7,DISI,Janya of MK-56,
+321,56,SamudrapriyA,S G2 M2 P N2 S^,S^ N2 P M2 G2 S,6,6,DISI,Janya of MK-56,
+322,56,Shanmukhi (Trimoorti),S R1 G2 M2 D1 N2 S^,S^ N2 D1 M2 G2 R1 S,7,7,DISI,Janya of MK-56,
+323,56,Sumanesharanjani,S G2 M2 P N2 S^,S^ N2 P M2 G2 S,6,6,DISI,Janya of MK-56,352;446;1048;1049;1117
+324,57,Simhendra Madhyamam,S R2 G2 M2 P D1 N3 S^,S^ N3 D1 P M2 G2 R2 S,8,8,DISI,mELakartha-57,38;79;441;549;698;816;823;956;957;958;1030;1167
+325,57,Sumadyuthi,S R2 G2 M2 P D1 N3 S^,S^ N3 D1 P M2 G2 R2 S,8,8,DISI,Janya of MK-57,
+326,57,Anandavalli,S G2 M2 P N3 S^,S^ N3 P M2 G2 S,6,6,DISI,Janya of MK-57,
+327,57,Ghantana,S R2 G2 M2 D1 N3 S^,S^ N3 D1 M2 G2 R2 S,7,7,DISI,Janya of MK-57,
+328,57,Suddha-2,S R2 G2 M2 P N3 S^,S^ N3 P M2 G2 R2 S,7,7,DISI,Janya of MK-57,
+329,57,UrmikA,S R2 G2 M2 P N3 S^,S^ N3 P M2 G2 R2 S,7,7,DISI,Janya of MK-57,
+330,57,Vijayasaraswathi,S G2 M2 P D1 N3 S^,S^ N3 P M2 G2 R2 S,7,7,DISI,Janya of MK-57,
+331,58,Hemavathi,S R2 G2 M2 P D2 N2 S^,S^ N2 D2 P M2 G2 R2 S,8,8,DISI,mELakartha-58,318;319;804;868;1006;1145
+332,58,DeshisimhAravam,S R2 G2 M2 P D2 N2 S^,S^ N2 D2 P M2 G2 R2 S,8,8,DISI,Janya of MK-58,
+333,58,ChandrarekhA,S R2 G2 M2 P D2 S^,S^ N2 D2 M2 G2 R2 S,7,7,DISI,Janya of MK-58,
+334,58,Hemapriya,S R2 G2 M2 D2 S^,S^ D2 M2 G2 R2 S,6,6,DISI,Janya of MK-58,
+335,58,Kshemakari,S R2 M2 D2 N2 S^,S^ N2 D2 M2 R2 S,6,6,DISI,Janya of MK-58,
+336,58,VijayasAranga,S R2 G2 M2 P D2 S^,S^ N2 D2 M2 G2 R2 S,7,7,DISI,Janya of MK-58,
+337,58,VijayashrAngi,S R2 G2 M2 P D2 S^,S^ N2 D2 M2 G2 R2 S,7,7,DISI,Janya of MK-58,
+338,58,YAgini,S R2 M2 P N2 S^,S^ N2 P M2 R2 S,6,6,DISI,Janya of MK-58,
+339,58,Dharmavathi,S R2 G2 M2 P D2 N3 S^,S^ N3 D2 P M2 G2 R2 S,8,8,DISI,Janya of MK-58,86;193;194;195;636;753
+340,59,DhAmavathi,S R2 G2 M2 P D2 N3 S^,S^ N3 D2 P M2 G2 R2 S,8,8,DISI,mELakartha-59,
+341,59,KarmukhAvati,S R2 G2 M2 D2 N3 S^,S^ N3 D2 M2 G2 R2 S,7,7,DISI,Janya of MK-59,
+342,59,Karpoora Bharani,S R2 G2 P M2 P D2 S^,S^ D2 P M2 P G2 R2 S,8,8,DISI,Janya of MK-59,
+343,59,Moharanjani,S R2 G2 P D2 S^,S^ N3 D2 M2 G2 S,6,6,DISI,Janya of MK-59,
+344,59,Varada,S R2 M2 P N3 S^,S^ N3 P M2 R2 S,6,6,DISI,Janya of MK-59,
+345,59,VijayanAgari,S R2 G2 M2 P D2 S^,S^ D2 P M2 G2 R2 S,7,7,DISI,Janya of MK-59,313;510;678;1141;1142
+346,60,Neethimathi,S R2 G2 M2 P D3 N3 S^,S^ N3 D3 P M2 G2 R2 S,8,8,DISI,mELakartha-60,1096
+347,60,HamsanAdham-1,S R2 M2 P D3 N3 S^,S^ N3 D3 P M2 R2 S,7,7,DISI,Janya of MK-60,
+348,60,HamsanAdham-2,S R2 M2 P N3 S^,S^ N3 P M2 R2 S,6,6,DISI,Janya of MK-60,68;69;305;306;307;383
+349,61,KAnthAmani,S R2 G3 M2 P D1 N1 S^,S^ N1 D1 P M2 G3 R2 S,8,8,RUDRA,mELakartha-61,
+350,61,KanakakusumAvali,S R2 G3 M2 P D2 S^,S^ D2 P M2 G3 R2 S,7,7,RUDRA,Janya of MK-61,
+351,61,Shruthiranjani,S R2 G3 M2 P D1 N1,N1 D1 P M2 G3 R2 S,7,7,RUDRA,Janya of MK-61,
+352,62,Rishabhapriyaa,S R2 G3 M2 P D1 N2 S^,S^ N2 D1 P M2 G3 R2 S,8,8,RUDRA,mELakartha-62,
+353,62,RathipriyA,S R2 G3 M2 P D1 N2 S^,S^ N2 D1 P M2 G3 R2 S,8,8,RUDRA,Janya of MK-62,
+354,62,Gopriya,S R2 G3 M2 D1 N2 S^,S^ N3 D1 M2 G3 R2 S,7,7,RUDRA,Janya of MK-62,
+355,62,RathnabhAnu,S R2 M2 P N2 D1 N2 S^,S^ N2 D1 P M2 G3 R2 S,8,8,RUDRA,Janya of MK-62,
+356,62,Suddha SAranga,S G3 M2 P N2 S^,S^ D1 P M2 G3 S,6,6,RUDRA,Janya of MK-62,
+357,63,LathAngi,S R2 G3 M2 P D1 N3 S^,S^ N3 D1 P M2 G3 R2 S,8,8,RUDRA,mELakartha-63,43;503;504;505;572;768;769;1134
+358,63,GeethapriyA,S R2 G3 M2 P D1 N3 S^,S^ N3 D1 P M2 G3 R2 S,8,8,RUDRA,Janya of MK-63,
+359,63,LalithAngi,S R2 G3 M2 D1 N3 S^,S^ N3 D1 M2 G3 R2 S,7,7,RUDRA,Janya of MK-63,
+360,63,RathnakAnthi,S R2 G3 M2 P N3 S^,S^ N3 P M2 G3 R2 S,7,7,RUDRA,Janya of MK-63,
+361,63,Raviswaroopini,S G3 M2 P D1 N3 S^,S^ N3 D1 P M2 G3 S,7,7,RUDRA,Janya of MK-63,
+362,63,Skandamanorama,S R2 M2 P N3 S^,S^ N3 P M2 R2 S,6,6,RUDRA,Janya of MK-63,
+363,64,VAchaspathi,S R2 G3 M2 P D2 N2 S^,S^ N2 D2 P M2 G3 R2 S,8,8,RUDRA,mELakartha-64,439;442;468;475;591;1102;1103;1104
+364,64,BhooshAvathi,S R2 G3 M2 P D2 N2 S^,S^ N2 D2 P M2 G3 R2 S,8,8,RUDRA,Janya of MK-64,
+365,64,Bhogeeshwari,S R2 G3 P D2 N2 D2 S^,S^ N2 D2 P M2 G3 R2 S,8,8,RUDRA,Janya of MK-64,
+366,64,Gaganamohini,S G3 P D2 N2 S^,S^ N2 P M2 G3 S,6,6,RUDRA,Janya of MK-64,
+367,64,Gurupriya,S R2 G3 M2 D2 N2 S^,S^ N2 D2 M2 G3 R2 S,7,7,RUDRA,Janya of MK-64,
+368,64,Hrdhini,S G3 M2 P N2 S^,S^ N2 P M2 G3 S,6,6,RUDRA,Janya of MK-64,
+369,64,MukthidAyini,S G3 M2 P D2 N2 S^,S^ N2 D2 P M2 G3 S,7,7,RUDRA,Janya of MK-64,
+370,64,NAdhabrahma,S P M2 P D2 N2 S^,S^ N2 D2 P M2 G3 S,7,7,RUDRA,Janya of MK-64,
+371,64,Triveni,S R2 M2 P D2 N2 S^,S^ N2 D2 P M2 R2 S,7,7,RUDRA,Janya of MK-64,
+372,64,VivAhapriyA,S R2 M2 P D2 N3 S^,S^ N3 D2 P M2 R2 S,7,7,RUDRA,Janya of MK-64,
+373,65,MechakalyAni,S R2 G3 M2 P D2 N3 S^,S^ N3 D2 P M2 G3 R2 S,8,8,RUDRA,mELakartha-65,19;20;24;89;109;110;231;255;321;375;392;418;585;586;587;622;679;701;702;735;966;969;988;1052;1061;1092;1130
+374,65,ShAnthakalyAni,S R2 G3 M2 P D2 N3 S^,S^ N3 D2 P M2 G3 R2 S,8,8,RUDRA,Janya of MK-65,
+375,65,Amritha BehAg,S M2 G3 P N3 S^,D2 N3 D2 M2 G3 S,6,6,RUDRA,Janya of MK-65,
+376,65,KalyAnadAyini,S R2 G3 M2 D2 N3 S^,S^ N3 D2 M2 G3 R2 S,7,7,RUDRA,Janya of MK-65,
+377,65,Kannadamaruva,S G3 M2 P D2 N3 S^,S^ N3 D2 P M2 G3 S,7,7,RUDRA,Janya of MK-65,
+378,65,Kowmoda,S R2 G3 M2 N3 S^,S^ N3 P M2 G3 S,6,6,RUDRA,Janya of MK-65,
+379,65,KunthalashreekAnti,S G3 M2 P D2 N3 S^,S^ N3 P M2 G3 R2 S,7,7,RUDRA,Janya of MK-65,
+380,65,Pramodhini,S G3 M2 P D2 S^,S^ D2 P M2 G3 S,6,6,RUDRA,Janya of MK-65,
+381,65,SAranga TArangini,S R2 M2 P D2 N3 S^,S^ N3 D2 P M2 R2 S,7,7,RUDRA,Janya of MK-65,
+382,65,Shilangi,S G2 M2 P N3 S^,S^ N3 P M2 G2 S,6,6,RUDRA,Janya of MK-65,
+383,65,SunAdavinodini,S G3 M2 D2 N3 S^,S^ N3 D2 M2 G3 S,6,6,RUDRA,Janya of MK-65,818;1050;1051;1084
+384,65,VandanadhArini,S R2 M2 P D2 S^,S^ D2 P M2 R2 S,6,6,RUDRA,Janya of MK-65,1042
+385,65,Yaman,S R2 G3 M2 P D2 N3 S^,S^ N3 D2 P M2 G3 R2 S,8,8,RUDRA,Janya of MK-65,
+386,65,YamunA KalyAni,S R2 G3 P M2 P D2 S^,S^ D2 P M2 P G3 R2 S,8,8,RUDRA,Janya of MK-65,1078
+387,66,ChitrAmbari,S R2 G3 M2 P D3 N3 S^,S^ N3 D3 P M2 G3 R2 S,8,8,RUDRA,mELakartha-66,
+388,66,Amrithavarshini,S G3 M2 P N3 S^,S^ N3 P M2 G3 S,6,6,RUDRA,Janya of MK-66,25;26;27;28;199;238;278;1043;1044
+389,66,Vijayakoshalam,S R2 G3 M2 P S^,S^ N3 P M2 G3 S,6,6,RUDRA,Janya of MK-66,
+390,67,Sucharitra,S R3 G3 M2 P D1 N1 S^,S^ N1 D1 P M2 G3 R3 S,8,8,ADITYA,mELakartha-67,
+391,67,SanthAna Manjari,S R3 G3 M2 P D1 S^,S^ N1 D1 P M2 R3 S,7,7,ADITYA,Janya of MK-67,
+392,68,Jyothiswaroopini,S R3 G3 M2 P D1 N2 S^,S^ N2 D1 P M2 G3 R3 S,8,8,ADITYA,mELakartha-68,
+393,69,DhAtuvardhani,S R3 G3 M2 P D1 N3 S^,S^ N3 D1 P M2 G3 R3 S,8,8,ADITYA,mELakartha-69,
+394,70,NAsikabhooshhani,S R3 G3 M2 P D2 N2 S^,S^ N2 D2 P M2 G3 R3 S,8,8,ADITYA,mELakartha-70,372
+395,70,NAsAmani,S R3 G3 M2 P D2 N2 S^,S^ N3 D2 P M2 G3 R3 S,8,8,ADITYA,Janya of MK-70,
+396,71,Kosalam,S R3 G3 M2 P D2 N3 S^,S^ N3 D2 P M2 G3 R3 S,8,8,ADITYA,mELakartha-71,
+397,71,KusumAkaram,S R3 G3 M2 P D2 N3 S^,S^ N3 D2 P M2 G3 R3 S,8,8,ADITYA,Janya of MK-71,
+398,72,Rasikapriya,S R3 G3 M2 P D3 N3 S^,S^ N3 D3 P M2 G3 R3 S,8,8,ADITYA,mELakartha-72,186;200;473;842;843
+399,72,Rasamanjari,S R3 G3 M2 P D3 N3 S^,S^ N3 D3 P M2 G3 R3 S,8,8,ADITYA,Janya of MK-72,
