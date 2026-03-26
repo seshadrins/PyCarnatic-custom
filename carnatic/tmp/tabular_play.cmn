@@ -2,13 +2,19 @@
 #M15
 { 
 { Ragam: MAyamAlava Gowla
-{ Talam: EKA (CHATHUSRA Jathi)
-#T1
+{ Talam: THRIPUTAI (CHATHUSRA Jathi)
+#T4
 #J2
 #D60
 { Composer: 
 
 { Pallavi:
 #S1
-D1 D1 P G3 ||
-{ - - - - ||
+S R1 S R1 | S R1 | G3 M1 ||
+{ - - - - | - - | - - ||
+S R1 G3 M1 | P D1 | N3 S^ ||
+{ - - - - | - - | - - ||
+S^ N3 S^ N3 | S^ N3 | D1 P ||
+{ - - - - | - - | - - ||
+S^ N3 D1 P | M1 G3 | R1 S ||
+{ - - - - | - - | - - ||

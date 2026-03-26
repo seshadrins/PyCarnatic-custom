@@ -6,10 +6,11 @@ Tabular Notation Editor (.ctab)
 """
 import os
 import re
+import time as _time
 import threading
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox,
+    QApplication, QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox,
     QLabel, QLineEdit, QComboBox, QPushButton, QTableWidget,
     QTableWidgetItem, QWidget, QSizePolicy, QFileDialog,
     QMessageBox, QHeaderView, QAbstractItemView, QFrame,
@@ -29,7 +30,16 @@ _ANGA_COLORS = {
 }
 _NOTE_BG  = QColor(255, 255, 255)
 _LYRIC_BG = QColor(255, 255, 204)
+_HIGHLIGHT_NOTE_BG  = QColor(255, 215, 0)    # gold for active note
+_HIGHLIGHT_LYRIC_BG = QColor(255, 193, 7)    # amber for active lyric
 _HEADER_FIXED_COLS = 3   # Section | Speed | Bar
+
+# Kattai (Shruti) → MIDI base note for Sa
+_KATTAI_TO_BASE_NOTE = {
+    "1.0": "C4",  "1.5": "C#4", "2.0": "D4",  "2.5": "D#4",
+    "3.0": "E4",  "4.0": "F4",  "4.5": "F#4", "5.0": "G4",
+    "5.5": "G#4", "6.0": "A4",  "6.5": "A#4",
+}
 
 
 # ──────────────────────────────────────────────────
@@ -201,6 +211,15 @@ class TabularEditorDialog(QDialog):
         self._data = ctab_parser.create_empty_data()
         self._note_map: dict = {}          # base-note → specific variant (e.g. 'R' → 'R2')
         self._current_raaga_id = None      # int raaga index from raaga module
+        self._cmn_editor = None            # reference to CMN TutorUI window
+
+        # Playback cell-highlighting support
+        self._highlight_timer = QTimer(self)
+        self._highlight_timer.setInterval(80)   # ~12 fps polling
+        self._highlight_timer.timeout.connect(self._update_highlight)
+        self._timing_map: list = []             # [(start_sec, row, col), ...]
+        self._play_start_time: float = 0.0
+        self._last_highlighted: tuple = (-1, -1)
 
         self.setWindowTitle("Tabular Notation Editor (.ctab)")
         self.setMinimumSize(900, 600)
@@ -214,12 +233,15 @@ class TabularEditorDialog(QDialog):
         # 1. Metadata panel
         root.addWidget(self._create_metadata_panel())
 
-        # 2. Anga structure info label
+        # 2. Playback settings bar (Instrument / Shruti / Drums)
+        root.addWidget(self._create_playback_panel())
+
+        # 3. Anga structure info label
         self._anga_label = QLabel()
         self._anga_label.setStyleSheet("font-style: italic; color: #444;")
         root.addWidget(self._anga_label)
 
-        # 3. Button bar
+        # 4. Button bar
         btn_bar = QHBoxLayout()
         self._btn_add = QPushButton("+ Add Avartam")
         self._btn_del = QPushButton("✕ Delete Row")
@@ -228,14 +250,15 @@ class TabularEditorDialog(QDialog):
         self._btn_save = QPushButton("Save…")
         self._btn_play = QPushButton("▶ Play")
         self._btn_stop = QPushButton("■ Stop")
+        self._btn_cmn = QPushButton("Open CMN Editor…")
         self._btn_close = QPushButton("Close")
         for btn in [self._btn_add, self._btn_del, self._btn_new,
                     self._btn_open, self._btn_save, self._btn_play,
-                    self._btn_stop, self._btn_close]:
+                    self._btn_stop, self._btn_cmn, self._btn_close]:
             btn_bar.addWidget(btn)
         root.addLayout(btn_bar)
 
-        # 4. Table
+        # 5. Table
         self._table = QTableWidget()
         self._table.setSelectionBehavior(
             QAbstractItemView.SelectionBehavior.SelectRows)
@@ -251,6 +274,7 @@ class TabularEditorDialog(QDialog):
         self._btn_save.clicked.connect(self._save_file)
         self._btn_play.clicked.connect(self._play)
         self._btn_stop.clicked.connect(self._stop)
+        self._btn_cmn.clicked.connect(self._open_cmn_editor)
         self._btn_close.clicked.connect(self.close)
 
     # ── Metadata Panel ─────────────────────────────
@@ -371,6 +395,65 @@ class TabularEditorDialog(QDialog):
             'Language': self._meta_language.currentText(),
             'Description': self._meta_description.text().strip(),
         }
+
+    # ── Playback Settings Panel ────────────────────
+    def _create_playback_panel(self) -> QGroupBox:
+        """Instrument / Shruti (Kattai) / Drums bar."""
+        box = QGroupBox("Playback Settings")
+        row = QHBoxLayout(box)
+        row.setContentsMargins(6, 4, 6, 4)
+
+        # Instrument
+        row.addWidget(QLabel("Instrument:"))
+        self._pb_instrument = QComboBox()
+        inst_list = list(settings._CARNATIC_INSTRUMENTS + settings._DEFAULT_INSTRUMENTS)
+        self._pb_instrument.addItems(inst_list)
+        self._pb_instrument.setCurrentText(settings.CURRENT_INSTRUMENT)
+        row.addWidget(self._pb_instrument)
+
+        row.addWidget(QLabel("  Shruti (Kattai):"))
+        self._pb_kattai = QComboBox()
+        self._pb_kattai.addItems(settings.KATTAI_LIST)
+        self._pb_kattai.setCurrentText("4.5")   # common default
+        row.addWidget(self._pb_kattai)
+
+        row.addWidget(QLabel("  Drums:"))
+        self._pb_drums_on = QComboBox()
+        self._pb_drums_on.addItems(["Off"] + list(settings._PERCUSSION_INSTRUMENTS))
+        if self.include_percussion:
+            self._pb_drums_on.setCurrentText(settings.CURRENT_PERCUSSION_INSTRUMENT)
+        else:
+            self._pb_drums_on.setCurrentIndex(0)
+        row.addWidget(self._pb_drums_on)
+
+        row.addStretch()
+
+        # Wire up signals
+        self._pb_instrument.currentTextChanged.connect(self._on_instrument_changed)
+        self._pb_kattai.currentTextChanged.connect(self._on_kattai_changed)
+        self._pb_drums_on.currentTextChanged.connect(self._on_drums_changed)
+        return box
+
+    def _on_instrument_changed(self, name: str):
+        settings.CURRENT_INSTRUMENT = name
+        settings.INSTRUMENT_INDEX = settings._get_list_index(
+            name, list(settings._CARNATIC_INSTRUMENTS + settings._DEFAULT_INSTRUMENTS))
+
+    def _on_kattai_changed(self, kattai: str):
+        base_note = _KATTAI_TO_BASE_NOTE.get(kattai)
+        if base_note:
+            # Update base note for ALL melodic instruments so the shift is heard
+            for i in range(len(settings.INSTRUMENT_BASE_NOTES)):
+                settings.INSTRUMENT_BASE_NOTES[i] = base_note
+
+    def _on_drums_changed(self, value: str):
+        if value == "Off":
+            self.include_percussion = False
+        else:
+            self.include_percussion = True
+            settings.CURRENT_PERCUSSION_INSTRUMENT = value
+            settings.CURRENT_PERCUSSION_INDEX = settings._get_list_index(
+                value, list(settings._PERCUSSION_INSTRUMENTS))
 
     # ── Grid Build ─────────────────────────────────
     def _current_thaala_jaathi(self):
@@ -638,6 +721,7 @@ class TabularEditorDialog(QDialog):
             temp_file = settings._TEMP_PATH + "tabular_play.cmn"
             with open(temp_file, 'w', encoding='utf-8') as f:
                 f.write(cmn_text)
+            # parse_notation_file applies #D, #S, etc. to settings globals
             scamp_notes, _, solkattu = cparser.parse_notation_file(temp_file)
             temp_midi = settings._TEMP_PATH + "tabular_play.mid"
             cmidi.write_to_midifile_from_scamp_notes(
@@ -646,6 +730,12 @@ class TabularEditorDialog(QDialog):
                 solkattu_list=solkattu)
             self.mplayer.is_playing = True
             self._btn_play.setEnabled(False)
+
+            # Build the timing map AFTER parsing (settings.TEMPO is now correct)
+            self._timing_map = self._build_timing_map(data)
+            self._play_start_time = _time.time()
+            self._last_highlighted = (-1, -1)
+            self._highlight_timer.start()
 
             def _bg():
                 try:
@@ -661,10 +751,109 @@ class TabularEditorDialog(QDialog):
             QMessageBox.critical(self, "Play Error", str(e))
 
     def _stop(self):
+        self._highlight_timer.stop()
+        self._clear_all_highlights()
         if self.mplayer and self.mplayer.is_playing:
             self.mplayer.stop()
             self.mplayer.is_playing = False
             self._btn_play.setEnabled(True)
+
+    # ── Cell Highlighting ──────────────────────────
+    def _build_timing_map(self, data: dict) -> list:
+        """Return list of (start_sec, table_row, table_col) for every
+        note-start event in the grid (skips , and ; prolongation cells)."""
+        try:
+            tempo = float(data['meta'].get('Tempo', '60') or '60')
+        except ValueError:
+            tempo = 60.0
+        full_dur = settings._FULL_NOTE_DURATION   # beats per akshara at speed-1
+
+        timing_map = []
+        current_time = 0.0
+
+        for grid_row_idx in range(1, self._table.rowCount()):
+            spd_w = self._table.cellWidget(grid_row_idx, 1)
+            speed = int(spd_w.currentText()) if spd_w else 1
+            akshara_sec = full_dur / (2 ** (speed - 1)) * (60.0 / tempo)
+
+            for ci in range(len(self._col_anga_types)):
+                col = _HEADER_FIXED_COLS + ci
+                cell = self._table.cellWidget(grid_row_idx, col)
+                if isinstance(cell, NoteCell):
+                    note_text = cell.note().strip()
+                    if note_text in (',', ';'):
+                        # Prolongation: don't start new timing entry; keep prev highlighted
+                        pass
+                    else:
+                        timing_map.append((current_time, grid_row_idx, col))
+                    current_time += akshara_sec
+                else:
+                    current_time += akshara_sec
+        return timing_map
+
+    def _update_highlight(self):
+        """Called by QTimer every ~80 ms during playback."""
+        if not self.mplayer or not self.mplayer.is_playing:
+            self._highlight_timer.stop()
+            self._clear_all_highlights()
+            self._btn_play.setEnabled(True)
+            return
+
+        elapsed = _time.time() - self._play_start_time
+        active = (-1, -1)
+        for (start, trow, tcol) in self._timing_map:
+            if start <= elapsed:
+                active = (trow, tcol)
+            else:
+                break
+
+        if active != self._last_highlighted:
+            # Clear old highlight
+            if self._last_highlighted != (-1, -1):
+                pr, pc = self._last_highlighted
+                self._set_cell_highlight(pr, pc, highlighted=False)
+            # Apply new highlight
+            if active != (-1, -1):
+                r, c = active
+                self._set_cell_highlight(r, c, highlighted=True)
+                self._table.scrollTo(self._table.model().index(r, c))
+            self._last_highlighted = active
+
+    def _set_cell_highlight(self, row: int, col: int, highlighted: bool):
+        cell = self._table.cellWidget(row, col)
+        if not isinstance(cell, NoteCell):
+            return
+        if highlighted:
+            cell.note_edit.setStyleSheet(
+                f"background-color: {_HIGHLIGHT_NOTE_BG.name()}; border: none; font-weight: bold;")
+            cell.lyric_edit.setStyleSheet(
+                f"background-color: {_HIGHLIGHT_LYRIC_BG.name()}; border: none;")
+        else:
+            cell.note_edit.setStyleSheet(
+                f"background-color: {_NOTE_BG.name()}; border: none;")
+            cell.lyric_edit.setStyleSheet(
+                f"background-color: {_LYRIC_BG.name()}; border: none;")
+
+    def _clear_all_highlights(self):
+        for r in range(1, self._table.rowCount()):
+            for ci in range(len(self._col_anga_types)):
+                col = _HEADER_FIXED_COLS + ci
+                self._set_cell_highlight(r, col, highlighted=False)
+        self._last_highlighted = (-1, -1)
+
+    # ── Open CMN Editor ────────────────────────────
+    def _open_cmn_editor(self):
+        """Launch TutorUI (CMN text editor) as a separate top-level window."""
+        try:
+            from carnatic.ui.tutor import TutorUI
+            if self._cmn_editor is None or not self._cmn_editor.isVisible():
+                self._cmn_editor = TutorUI()
+                self._cmn_editor.show()
+            else:
+                self._cmn_editor.raise_()
+                self._cmn_editor.activateWindow()
+        except Exception as e:
+            QMessageBox.critical(self, "CMN Editor Error", str(e))
 
     # ── Keyboard Navigation ─────────────────────────
     def _navigate_cell(self, row: int, col: int, delta: int, field: str):
@@ -837,4 +1026,37 @@ class TabularEditorDialog(QDialog):
             threading.Thread(target=_bg, daemon=True).start()
         except Exception as e:
             QMessageBox.critical(self, "Scale Play Error", str(e))
+
+
+# ──────────────────────────────────────────────────
+# Module-level entry point
+# ──────────────────────────────────────────────────
+def show_ui(language: str = 'en',
+            player_type: settings.PLAYER_TYPE = settings.PLAYER_TYPE.SF2_LOADER):
+    """
+    Launch the Tabular Notation Editor as the main application window.
+    The CMN editor (TutorUI) is accessible via the 'Open CMN Editor…' button.
+    """
+    import sys
+
+    def _except_hook(exc_type, exc_value, exc_tb):
+        import traceback
+        tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        print("TabularEditor exception:\n", tb)
+
+    sys.excepthook = _except_hook
+    settings.set_language(language)
+
+    app = QApplication.instance() or QApplication(sys.argv)
+    mplayer = cmidi.MPlayer(settings._SOUND_FONT_FILE)
+    window = TabularEditorDialog(
+        parent=None,
+        mplayer=mplayer,
+        player_type=player_type,
+        include_percussion=True,
+    )
+    # Make the dialog behave like a top-level window
+    window.setWindowFlag(Qt.WindowType.Window, True)
+    window.show()
+    sys.exit(app.exec())
 

@@ -1,12 +1,12 @@
 {Geetham
-#M29
-{Scale: Dheera ShankarAbharanam
-{ Ragam: Dheera ShankarAbharanam
+#M15
+{Scale: MAyamAlava Gowla
+{ Ragam: MAyamAlava Gowla
 { Talam: Triputa (Chathurasra Jathi)
 #T4
 #J2
 #D60
 {Aarohanam:
-S R2 G3 M1 | P D2 | N3 S^ ||
+S R1 G3 M1 | P D1 | N3 S^ ||
 {Avarohanam:
-S^ N3 D2 P | M1 G3 | R2 S ||
+S^ N3 D1 P | M1 G3 | R1 S ||
