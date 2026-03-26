@@ -20,6 +20,7 @@ _RAAGA_PRACTICE_PATH = settings._RAAGA_PRACTICE_PATH #_APP_PATH + "/Lessons/Raag
 _TEMP_PATH = settings._TEMP_PATH #_APP_PATH + "/tmp/"
 _TEMP_FILE = settings._TEMP_FILE #_TEMP_PATH + "delme.cmn"
 _THAALAM_LESSONS_PATH = settings._THAALAM_LESSONS_PATH #_APP_PATH + "/Lessons/Percussion/"
+_CTAB_PATH = settings._CTAB_PATH
 class TutorUI(QMainWindow):
     """
         PyCarnatic UI Class
@@ -62,6 +63,8 @@ class TutorUI(QMainWindow):
         self._newAction = QAction(QIcon(_IMAGES_PATH+"NewNoteFile-icon.png"),self._resources["mnuNew"],self)
         self._newAction.setToolTip(self._resources["tipNewFile"])
         self._openAction = QAction(QIcon(_IMAGES_PATH+"NoteFile-icon.png"),self._resources["mnuOpen"], self)
+        self._newTabularAction = QAction(self._resources.get("mnuNewTabular", "New Tabular Notation..."), self)
+        self._openTabularAction = QAction(self._resources.get("mnuOpenTabular", "Open Tabular Notation..."), self)
         self._openAction.setToolTip(self._resources["tipOpenFile"])
         self._closeAction = QAction(self._resources["mnuClose"], self)
         self._saveAction = QAction(self._resources["mnuSave"], self)
@@ -189,6 +192,10 @@ class TutorUI(QMainWindow):
         fileMenu = QMenu(self._resources["mnuFile"], self)
         fileMenu.addAction(self._newAction)
         fileMenu.addAction(self._openAction)
+        fileMenu.addSeparator()
+        fileMenu.addAction(self._newTabularAction)
+        fileMenu.addAction(self._openTabularAction)
+        fileMenu.addSeparator()
         fileMenu.addAction(self._closeAction)
         fileMenu.addAction(self._saveAction)
         fileMenu.addSeparator()
@@ -262,6 +269,8 @@ class TutorUI(QMainWindow):
         ' file menu signals'
         self._newAction.triggered.connect(lambda: self._new_file(file_path=settings._SAVE_FILES_PATH))
         self._openAction.triggered.connect(lambda: self._open_file(file_path=_NOTES_PATH))
+        self._newTabularAction.triggered.connect(self._new_tabular_file)
+        self._openTabularAction.triggered.connect(self._open_tabular_file)
         self._closeAction.triggered.connect(lambda: self._close_file(file_path=settings._SAVE_FILES_PATH))
         self._saveAction.triggered.connect(lambda: self._save_file(file_path=settings._SAVE_FILES_PATH))
         self._saveAsPDFAction.triggered.connect(self._save_as_pdf)
@@ -721,6 +730,29 @@ class TutorUI(QMainWindow):
             t.start()
         QApplication.processEvents()
         self._delete_file(_TEMP_FILE)
+
+    # ── Tabular Notation Editor ─────────────────────────────────────
+    def _new_tabular_file(self):
+        from carnatic.ui.tabular_editor import TabularEditorDialog
+        dlg = TabularEditorDialog(
+            parent=self,
+            mplayer=self.MPlayer,
+            player_type=self._player_type,
+            include_percussion=self._include_percussion_layer,
+        )
+        dlg.exec()
+
+    def _open_tabular_file(self):
+        from carnatic.ui.tabular_editor import TabularEditorDialog
+        dlg = TabularEditorDialog(
+            parent=self,
+            mplayer=self.MPlayer,
+            player_type=self._player_type,
+            include_percussion=self._include_percussion_layer,
+        )
+        dlg._open_file()   # immediately trigger open dialog
+        dlg.exec()
+
     def _playSelectedThaaLam(self,avarthanam_count=2):
         thaaLa_index = settings.THAALA_NAMES[self._thaaLa_combo.currentText()]
         jaathi_index = settings.JAATHI_NAMES[self._jaathi_combo.currentText()]
