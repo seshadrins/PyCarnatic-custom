@@ -1,0 +1,6 @@
+- Tab to work horizontally
+- If something is selected, then only play that - else play from beginning
+- Ability to insert rows in between
+- When a swara is entered in the cell then it should automatically be picked up from the respective raaga - for example if R is entered then it should be replaced with R1,R2,R3 etc based on the raaga. If no raaga is selected then it should be replaced with the most appropriate swara. The user should be able to configure this behaviour. 
+Follow this logic for choosing the most appropriate swara when both types are present in the raaga: For example: If both N2 and N3 is there in the raaga then it should be replaced based on whether the swara being entered is in aarohanam or avarohanam. This can be detected based on its predecessor. If it is in aarohanam then the corresponding N which is aarohanam should be entered. And if it in avarohanam then the corresponding N which is in avarohanam should be entered.
+When a ctab file is opened it should first clear exisitng table and then load it.
