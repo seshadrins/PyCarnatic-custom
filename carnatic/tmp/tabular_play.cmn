@@ -1,20 +1,28 @@
-{ Geetham
-#M15
-{ 
-{ Ragam: MAyamAlava Gowla
+{ Varnam
+#M28
+{ Ninnu Kori
+{ Ragam: Mohanam
 { Talam: THRIPUTAI (CHATHUSRA Jathi)
 #T4
 #J2
-#D60
+#D90
 { Composer: 
 
-{ Pallavi:
+{ Anupallavi:
 #S1
-S R1 S R1 | S R1 | G3 M1 ||
-{ - - - - | - - | - - ||
-S R1 G3 M1 | P D1 | N3 S^ ||
-{ - - - - | - - | - - ||
-S^ N3 S^ N3 | S^ N3 | D1 P ||
-{ - - - - | - - | - - ||
-S^ N3 D1 P | M1 G3 | R1 S ||
-{ - - - - | - - | - - ||
+G3 , G3 , | P , | ; - ||
+{ NA . NNU . | PA A | . . ||
+G3 G3 P P | D2 D2 | P , ||
+{ LI M . . | . . | PA . ||
+D2 S' D2 D2 | P G3- | D2 P ||
+{ SA . MA . | . . | YA . ||
+D2- G3 D2 P | G3 R2 | S R2 ||
+{ . MI . . | DE . | . . ||
+G3 G3 P P | D2 P | D2 S' ||
+{ NA A . . | . . | ME E ||
+D2 S' R2' S' | G3' , | , S' ||
+{ . DA . . | KRU . | . PA ||
+D2 S' R2' S' | , D2 | P D2 ||
+{ . . JO . | . DA | . . ||
+S' D2 , P | G3 R2 | S R2 ||
+{ RA . . . | DA . | . . ||

@@ -1,12 +1,12 @@
 {Geetham
-#M15
-{Scale: MAyamAlava Gowla
-{ Ragam: MAyamAlava Gowla
+#M28
+{Scale: Mohanam
+{ Ragam: Mohanam
 { Talam: Triputa (Chathurasra Jathi)
 #T4
 #J2
 #D60
 {Aarohanam:
-S R1 G3 M1 | P D1 | N3 S^ ||
+S R2 G3 P | D2 S^ | - - ||
 {Avarohanam:
-S^ N3 D1 P | M1 G3 | R1 S ||
+S^ D2 P G3 | R2 S | - - ||

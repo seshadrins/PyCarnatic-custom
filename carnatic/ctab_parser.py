@@ -3,9 +3,11 @@ Module for Tabular Notation Format (.ctab)
 - Defines anga structure helpers
 - Reads/writes .ctab CSV files
 - Converts .ctab data to .cmn notation string for playback
+- Converts .cmn notation files to .ctab data (best-effort)
 """
 import csv
 import os
+import re as _re
 from carnatic import settings
 
 _CTAB_SEPARATOR = "---"
@@ -207,3 +209,221 @@ def convert_to_cmn(data: dict) -> str:
 
     return '\n'.join(lines)
 
+
+# ── CMN → CTAB converter ──────────────────────────────────────────────────────
+
+# Matches a CMN command line: #T4, #J2, #M15, #S1, #D60 …
+_CMD_RE = _re.compile(r'^\s*#([DIJMNPST])(\d+)')
+
+# Matches individual note tokens in a CMN notation line.
+# Handles: S, R2, G3, M2', D., N^, S', etc.; also , and ;
+_CMN_NOTE_RE = _re.compile(
+    r'([SsRrGgMmPpDdNn][1-4]?[\.\'\^]?|[,;])'
+)
+
+# Known section keywords (lowercase) → canonical CTAB section name
+_SECTION_MAP = [
+    ('pallavi',        'Pallavi'),
+    ('anupallavi',     'Anupallavi'),
+    ('charanam 4',     'Charanam 4'),
+    ('charanam 3',     'Charanam 3'),
+    ('charanam 2',     'Charanam 2'),
+    ('charanam 1',     'Charanam 1'),
+    ('charanam',       'Charanam 1'),
+    ('muktayi',        'Muktayi Swaram'),
+    ('ettugada',       'Ettugada Swaram'),
+]
+
+# Comment keywords that are NOT song titles
+_NON_TITLE_KEYWORDS = (
+    'ragam', 'raagam', 'talam', 'thaalam', 'composer', 'meaning',
+    'pallavi', 'charanam', 'anupallavi', 'arog', 'avarog',
+    'geetham', 'varnam', 'kriti', 'taal', 'swaram', 'ettugada',
+)
+
+
+def _split_tokens_into_avartams(tokens: list, total_aks: int) -> list:
+    """Split note tokens into avartam-sized chunks.
+
+    ';' counts as 2 akshara positions (it extends the previous note by 2x
+    duration in the CMN player).  All other tokens count as 1 position.
+    """
+    if not tokens or total_aks <= 0:
+        return [list(tokens)] if tokens else [[]]
+
+    chunks: list = []
+    chunk: list = []
+    pos = 0
+    for tok in tokens:
+        chunk.append(tok)
+        pos += 2 if tok.strip() == ';' else 1
+        if pos >= total_aks:
+            chunks.append(chunk)
+            chunk = []
+            pos = 0
+    if chunk:
+        chunks.append(chunk)
+    return chunks if chunks else [[]]
+
+
+def convert_cmn_to_ctab(cmn_filepath: str) -> dict:
+    """Best-effort conversion of a .cmn file to ctab data dict.
+
+    The function parses #T/#J/#M/#D/#S commands for musical settings,
+    extracts metadata from { comment lines, and groups note tokens from
+    notation lines (those containing ||) into avartam-sized CTAB rows.
+
+    Lyric lines (comment lines that contain ||) are paired with the
+    immediately preceding notation line.
+    """
+    data = create_empty_data()
+    meta = data['meta']
+
+    # Working state
+    thaala_idx = int(settings.THAALA_NAMES.THRIPUTAI)
+    jaathi_idx = int(settings.JAATHI_NAMES.CHATHUSRA)
+    current_speed = 1
+    current_section = 'Pallavi'
+    bar_counter = 1
+    title_candidates: list = []
+    rows: list = []          # accumulated {section, speed, bar, notes, lyrics}
+    pending: dict | None = None   # last notation block waiting for lyrics
+
+    with open(cmn_filepath, 'r', encoding='utf-8', errors='replace') as fh:
+        file_lines = fh.readlines()
+
+    for raw_line in file_lines:
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        # ── Command line ──────────────────────────────
+        m = _CMD_RE.match(line)
+        if m:
+            key, val = m.group(1), int(m.group(2))
+            if key == 'T':
+                thaala_idx = val
+            elif key == 'J':
+                jaathi_idx = val
+            elif key == 'M':
+                meta['Melakartha'] = str(val)
+            elif key == 'D':
+                meta['Tempo'] = str(val)
+            elif key == 'S':
+                # Flush pending before speed change
+                if pending is not None:
+                    rows.append(pending)
+                    pending = None
+                current_speed = val
+            continue
+
+        # ── Comment / lyric line ─────────────────────
+        if line.startswith('{'):
+            text = line[1:].strip()
+            low = text.lower()
+
+            # Lyric line – comment that contains || notation markers
+            if '||' in text:
+                lyric_tokens = [
+                    t for t in _re.split(r'\s+',
+                        _re.sub(r'\|\|?', ' ', text)) if t
+                ]
+                if pending is not None:
+                    pending['lyrics'] = lyric_tokens
+                    rows.append(pending)
+                    pending = None
+                continue
+
+            # Section detection (flush pending before new section)
+            for key_phrase, sec_name in _SECTION_MAP:
+                if key_phrase in low:
+                    if pending is not None:
+                        rows.append(pending)
+                        pending = None
+                    current_section = sec_name
+                    bar_counter = 1
+                    break
+
+            # Metadata extraction
+            if low.startswith('ragam:') or low.startswith('raagam:'):
+                meta['Ragam'] = text.split(':', 1)[1].strip()
+            elif low.startswith('composer:'):
+                meta['Composer'] = text.split(':', 1)[1].strip()
+
+            # Title candidate: first substantial comment without known keywords
+            if (text and not meta.get('Title')
+                    and not any(k in low for k in _NON_TITLE_KEYWORDS)):
+                # Also skip type keywords embedded in the first line
+                is_type_line = any(
+                    ct.lower() in low for ct in COMPOSITION_TYPES)
+                if not is_type_line:
+                    title_candidates.append(text)
+            continue
+
+        # ── Notation line ─────────────────────────────
+        if '||' in line:
+            if pending is not None:
+                rows.append(pending)
+                pending = None
+
+            note_tokens = _CMN_NOTE_RE.findall(
+                line.replace('||', ' ').replace('|', ' '))
+
+            total_aks = get_total_aksharas(thaala_idx, jaathi_idx)
+            avartam_chunks = _split_tokens_into_avartams(note_tokens, total_aks)
+
+            for i, chunk in enumerate(avartam_chunks):
+                row_data = {
+                    'section': current_section,
+                    'speed':   str(current_speed),
+                    'bar':     str(bar_counter),
+                    'notes':   chunk,
+                    'lyrics':  [],
+                }
+                bar_counter += 1
+                if i < len(avartam_chunks) - 1:
+                    rows.append(row_data)     # intermediate – no lyrics
+                else:
+                    pending = row_data        # last chunk waits for lyric line
+
+    # Flush any remaining pending row
+    if pending is not None:
+        rows.append(pending)
+
+    # Set title from candidates
+    if title_candidates and not meta.get('Title'):
+        meta['Title'] = title_candidates[0]
+
+    # Resolve thaala/jaathi names from their index values
+    for t in settings.THAALA_NAMES:
+        if t.value == thaala_idx:
+            meta['Thaalam'] = t.name
+            break
+    for j in settings.JAATHI_NAMES:
+        if j.value == jaathi_idx:
+            meta['Jaathi'] = j.name
+            break
+
+    # Build CTAB rows
+    total_aks = get_total_aksharas(thaala_idx, jaathi_idx)
+    for row in rows:
+        notes  = (row.get('notes',  []) + [''] * total_aks)[:total_aks]
+        lyrics = (row.get('lyrics', []) + [''] * total_aks)[:total_aks]
+
+        data['rows'].append({
+            'section':  row['section'],
+            'speed':    row['speed'],
+            'bar':      row['bar'],
+            'row_type': 'N',
+            'aksharas': notes,
+        })
+        if any(lyr.strip() for lyr in lyrics):
+            data['rows'].append({
+                'section':  row['section'],
+                'speed':    row['speed'],
+                'bar':      row['bar'],
+                'row_type': 'L',
+                'aksharas': lyrics,
+            })
+
+    return data

@@ -247,13 +247,16 @@ class TabularEditorDialog(QDialog):
         self._btn_del = QPushButton("✕ Delete Row")
         self._btn_new = QPushButton("New")
         self._btn_open = QPushButton("Open…")
-        self._btn_save = QPushButton("Save…")
+        self._btn_save = QPushButton("Save")
+        self._btn_save_as = QPushButton("Save As…")
+        self._btn_import_cmn = QPushButton("Import CMN…")
         self._btn_play = QPushButton("▶ Play")
         self._btn_stop = QPushButton("■ Stop")
         self._btn_cmn = QPushButton("Open CMN Editor…")
         self._btn_close = QPushButton("Close")
         for btn in [self._btn_add, self._btn_del, self._btn_new,
-                    self._btn_open, self._btn_save, self._btn_play,
+                    self._btn_open, self._btn_save, self._btn_save_as,
+                    self._btn_import_cmn, self._btn_play,
                     self._btn_stop, self._btn_cmn, self._btn_close]:
             btn_bar.addWidget(btn)
         root.addLayout(btn_bar)
@@ -272,6 +275,8 @@ class TabularEditorDialog(QDialog):
         self._btn_new.clicked.connect(self._new_file)
         self._btn_open.clicked.connect(self._open_file)
         self._btn_save.clicked.connect(self._save_file)
+        self._btn_save_as.clicked.connect(self._save_as_file)
+        self._btn_import_cmn.clicked.connect(self._import_cmn_file)
         self._btn_play.clicked.connect(self._play)
         self._btn_stop.clicked.connect(self._stop)
         self._btn_cmn.clicked.connect(self._open_cmn_editor)
@@ -667,6 +672,8 @@ class TabularEditorDialog(QDialog):
     def _new_file(self):
         self._filepath = ""
         self._data = ctab_parser.create_empty_data()
+        # Clear all rows so _rebuild_grid starts fresh (not re-populating old data)
+        self._table.setRowCount(0)
         self._populate_metadata_panel(ctab_parser._DEFAULT_META)
         self._rebuild_grid()
         self.setWindowTitle("Tabular Notation Editor – New File")
@@ -708,6 +715,49 @@ class TabularEditorDialog(QDialog):
                                     f"File saved:\n{self._filepath}")
         except Exception as e:
             QMessageBox.critical(self, "Save Error", str(e))
+
+    def _save_as_file(self):
+        """Always open a Save dialog to choose a new location."""
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save As – Tabular Notation File",
+            self._filepath or settings._LESSONS_PATH,
+            "Carnatic Tabular (*.ctab);;All Files (*)")
+        if not path:
+            return
+        if not path.endswith('.ctab'):
+            path += '.ctab'
+        self._filepath = path
+        try:
+            data = self._collect_data()
+            ctab_parser.write_ctab(data, self._filepath)
+            self.setWindowTitle(
+                f"Tabular Notation Editor – {os.path.basename(self._filepath)}")
+            QMessageBox.information(self, "Saved",
+                                    f"File saved:\n{self._filepath}")
+        except Exception as e:
+            QMessageBox.critical(self, "Save Error", str(e))
+
+    def _import_cmn_file(self):
+        """Open a .cmn file and convert it to tabular notation."""
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Import CMN File",
+            settings._LESSONS_PATH,
+            "Carnatic Notation (*.cmn);;All Files (*)")
+        if not path:
+            return
+        try:
+            data = ctab_parser.convert_cmn_to_ctab(path)
+            self._filepath = ""
+            self._table.setRowCount(0)
+            self._populate_grid_from_data(data)
+            base = os.path.basename(path)
+            self.setWindowTitle(f"Tabular Notation Editor – {base} [imported]")
+            QMessageBox.information(
+                self, "Import Complete",
+                f"Imported from:\n{path}\n\n"
+                "Review the notation and use 'Save As…' to save as a .ctab file.")
+        except Exception as e:
+            QMessageBox.critical(self, "Import Error", str(e))
 
     # ── Playback ───────────────────────────────────
     def _play(self):
