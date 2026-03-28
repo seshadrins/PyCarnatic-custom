@@ -367,8 +367,15 @@ class TabularEditorDialog(QDialog):
         self._meta_ragam.currentTextChanged.connect(self._on_raaga_changed)
         self._btn_play_scale.clicked.connect(self._play_scale)
 
-        # Pre-populate from _DEFAULT_META
+        # Pre-populate from _DEFAULT_META – block signals so _rebuild_grid
+        # is not triggered before _anga_label and the rest of _setup_ui exist.
+        self._meta_thaalam.blockSignals(True)
+        self._meta_jaathi.blockSignals(True)
+        self._meta_ragam.blockSignals(True)
         self._populate_metadata_panel(ctab_parser._DEFAULT_META)
+        self._meta_thaalam.blockSignals(False)
+        self._meta_jaathi.blockSignals(False)
+        self._meta_ragam.blockSignals(False)
         return box
 
     def _populate_metadata_panel(self, meta: dict):

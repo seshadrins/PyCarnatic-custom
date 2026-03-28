@@ -230,7 +230,7 @@ def set_default_raaga_id(raagam_index):
     settings.RAAGA_INDEX = raagam_index
     melakartha_number = get_melakartha(raagam_index)
     settings.MELAKARTHA_INDEX = melakartha_number
-    print('raagam index',raagam_index,'melakartha number',melakartha_number)
+    #print('raagam index',raagam_index,'melakartha number',melakartha_number)
 def get_melakartha(raagam_index=None):
     """
         get the meLakartha number of the specified raaga

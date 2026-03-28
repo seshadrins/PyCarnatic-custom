@@ -177,7 +177,7 @@ def get_raaga_dictionary():
             #RAAGA_DICT[int(row[0])] = {key: value for key, value in zip(headers, row)}
             RAAGA_DICT[raaga_id] = {key.strip(): value.strip() for key, value in zip(headers, row)}
             RAAGA_DICT[raaga_id]['id'] = raaga_id
-            print('raaga_id',raaga_id,RAAGA_DICT[raaga_id]['Name'],RAAGA_DICT[raaga_id]['Melakartha_or_Janya'])
+            # print('raaga_id',raaga_id,RAAGA_DICT[raaga_id]['Name'],RAAGA_DICT[raaga_id]['Melakartha_or_Janya'])
     return RAAGA_DICT
 def get_melakartha_dictionary():
     """

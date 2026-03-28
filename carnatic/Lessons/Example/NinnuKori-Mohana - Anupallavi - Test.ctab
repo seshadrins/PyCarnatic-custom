@@ -1,0 +1,24 @@
+Type,Varnam
+Title,Ninnu Kori
+Ragam,Mohanam
+Melakartha,28
+Thaalam,THRIPUTAI
+Jaathi,CHATHUSRA
+Tempo,90
+Composer,
+Language,Tamil
+Description,
+---
+Section,Speed,Bar,RowType,A1,A2,A3,A4,A5,A6,A7,A8
+Anupallavi,3,11,N,D2,S',D2,D2,S',G3-,D2,P
+Anupallavi,3,11,L,SA,.,MA,.,.,.,YA,.
+Anupallavi,3,12,N,D2-,G3,D2,P,G3,R2,S,R2
+Anupallavi,3,12,L,.,MI,.,.,DE,.,.,.
+Anupallavi,3,13,N,G3,G3,P,P,D2,P,D2,S'
+Anupallavi,3,13,L,NA,A,.,.,.,.,ME,E
+Anupallavi,3,14,N,D2,S',R2',S',G3',",",",",S'
+Anupallavi,3,14,L,.,DA,.,.,KRU,.,.,PA
+Anupallavi,3,15,N,D2,S',R2',S',",",D2,P,D2
+Anupallavi,3,15,L,.,.,JO,.,.,DA,.,.
+Anupallavi,3,16,N,S',D2,",",P,G3,R2,S,R2
+Anupallavi,3,16,L,RA,.,.,.,DA,.,.,.
