@@ -6,7 +6,7 @@ Thaalam|THRIPUTAI
 Jaathi|CHATHUSRA
 Tempo|60
 Composer|
-Language|Tamil
+Language|Sanskrit
 Description|
 ---
 Section|Speed|Bar|RowType|A1|A2|A3|A4|A5|A6|A7|A8
@@ -64,11 +64,20 @@ Charanam 1|3|7|N|G3|G3|D2|P|D2|,|G3|D2
 Charanam 1|3|7|L|NI|.|.|.|.|.|.|.
 Charanam 1|3|8|N|D2|P|G3|P|G3|R2|S|R2
 Charanam 1|3|8|L|.|.|VA|A|.|.|SA|.
-Other|3|28|N|G3|,|,|,|R2|,|S|,
-Other|3|28|L|.|.|.|.|.|.|.|.
-Other|3|29|N|R2|,|,|,|D2.|,|,|,
-Other|3|29|L|.|.|.|.|.|.|.|.
-Other|3|30|N|R2|,|D2.|,|S|,|,|,
-Other|3|30|L|.|.|.|.|.|.|.|.
-Other|3|31|N|R2|,|,|,|G3|,|R2|,
-Other|3|31|L|.|.|.|.|.|.|.|.
+Other 1|3|5|N|G3|,|,|,|R2|,|S|,
+Other 1|3|23|L||||||||
+Other 1|3|5|N|R2|,|,|,|D2.|,|,|,
+Other 1|3|23|L||||||||
+Other 1|3|6|N|R2|,|D2.|,|S|,|,|,
+Other 1|3|23|L||||||||
+Other 1|3|6|N|R2|,|,|,|G3|,|R2|,
+Other 1|3|23|L||||||||
+Other 2|3|7|N|G3|G3|D2|P|D2|,|G3|D2
+Other 1|3|23|L||||||||
+Other 2|3|7|N|NI|.|.|.|.|.|.|.
+Other 1|3|23|L||||||||
+Other 2|3|8|N|D2|P|G3|P|G3|R2|S|R2
+Other 1|3|23|L||||||||
+Other 2|3|8|N|.|.|VA|A|.|.|SA|.
+Other 1|3|23|L||||||||
+

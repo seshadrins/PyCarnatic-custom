@@ -1,14 +1,16 @@
 """
 Module for Tabular Notation Format (.ctab)
 - Defines anga structure helpers
-- Reads/writes .ctab CSV files
+- Reads/writes .ctab files (pipe-delimited, backward-compatible with comma CSV)
 - Converts .ctab data to .cmn notation string for playback
-- Converts .cmn notation files to .ctab data (best-effort)
+- Converts .cmn notation files to .ctab data (best-effort, raaga-aware)
 """
 import csv
+import io
 import os
 import re as _re
 from carnatic import settings
+from carnatic import raaga as _raaga_module
 
 _CTAB_SEPARATOR = "---"
 _CTAB_EXTENSION = ".ctab"
@@ -87,58 +89,80 @@ def get_jaathi_index(name: str) -> int:
 
 
 def read_ctab(filepath: str) -> dict:
-    """Read a .ctab file and return a data dict."""
+    """Read a .ctab file and return a data dict.
+
+    Supports both the new pipe-delimited format (|) and the legacy
+    comma-delimited CSV format.  Detection is automatic: if any line in the
+    file contains a pipe character the pipe format is used; otherwise the
+    file is parsed as CSV (which handles quoted commas like "","" in aksharas).
+    """
     data = create_empty_data()
-    with open(filepath, 'r', newline='', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        in_notation = False
-        headers_read = False
-        for row in reader:
-            if not row:
+    with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
+        raw_lines = f.readlines()
+
+    # Detect delimiter by inspecting the raw text
+    use_pipe = any('|' in line for line in raw_lines)
+
+    def _split(line: str) -> list:
+        if use_pipe:
+            return [c.strip() for c in line.rstrip('\n').rstrip('\r').split('|')]
+        # Fall back to csv.reader to handle quoted commas correctly
+        return next(csv.reader(io.StringIO(line.rstrip('\n'))))
+
+    in_notation = False
+    headers_read = False
+    for raw_line in raw_lines:
+        if not raw_line.strip():
+            continue
+        row = _split(raw_line)
+        if not row:
+            continue
+        if row[0].strip() == _CTAB_SEPARATOR:
+            in_notation = True
+            continue
+        if not in_notation:
+            if len(row) >= 2:
+                key, val = row[0].strip(), row[1].strip()
+                if key in data['meta']:
+                    data['meta'][key] = val
+        else:
+            if not headers_read:
+                headers_read = True  # skip column-header row
                 continue
-            if row[0].strip() == _CTAB_SEPARATOR:
-                in_notation = True
+            if len(row) < 4:
                 continue
-            if not in_notation:
-                if len(row) >= 2:
-                    key, val = row[0].strip(), row[1].strip()
-                    if key in data['meta']:
-                        data['meta'][key] = val
-            else:
-                if not headers_read:
-                    headers_read = True  # skip header row
-                    continue
-                if len(row) < 4:
-                    continue
-                data['rows'].append({
-                    'section': row[0].strip(),
-                    'speed': row[1].strip(),
-                    'bar': row[2].strip(),
-                    'row_type': row[3].strip(),
-                    'aksharas': [c.strip() for c in row[4:]],
-                })
+            data['rows'].append({
+                'section':  row[0].strip(),
+                'speed':    row[1].strip(),
+                'bar':      row[2].strip(),
+                'row_type': row[3].strip(),
+                'aksharas': [c.strip() for c in row[4:]],
+            })
     return data
 
 
 def write_ctab(data: dict, filepath: str):
-    """Write a .ctab file from data dict."""
+    """Write a .ctab file from data dict using | as delimiter."""
     meta = data['meta']
     ti = get_thaala_index(meta.get('Thaalam', 'THRIPUTAI'))
     ji = get_jaathi_index(meta.get('Jaathi', 'CHATHUSRA'))
     total = get_total_aksharas(ti, ji)
     headers = [f"A{i+1}" for i in range(total)]
+
+    def _write_row(cells, fh):
+        fh.write('|'.join(str(c) for c in cells) + '\n')
+
     with open(filepath, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
         for key, val in meta.items():
-            writer.writerow([key, val])
-        writer.writerow([_CTAB_SEPARATOR])
-        writer.writerow(['Section', 'Speed', 'Bar', 'RowType'] + headers)
+            _write_row([key, val], f)
+        _write_row([_CTAB_SEPARATOR], f)
+        _write_row(['Section', 'Speed', 'Bar', 'RowType'] + headers, f)
         for row in data['rows']:
             ak = list(row.get('aksharas', []))
             while len(ak) < total:
                 ak.append('')
-            writer.writerow([row.get('section', ''), row.get('speed', '1'),
-                             row.get('bar', '1'), row.get('row_type', 'N')] + ak[:total])
+            _write_row([row.get('section', ''), row.get('speed', '1'),
+                        row.get('bar', '1'), row.get('row_type', 'N')] + ak[:total], f)
 
 
 def convert_to_cmn(data: dict) -> str:
@@ -214,6 +238,10 @@ def convert_to_cmn(data: dict) -> str:
 
 # Matches a CMN command line: #T4, #J2, #M15, #S1, #D60 …
 _CMD_RE = _re.compile(r'^\s*#([DIJMNPST])(\d+)')
+
+# Regex to resolve a single generic swara token: bare note letter + optional octave marker
+# Matches tokens like 'R', 'G', 'D' (no digit) with optional .  ' ^ suffix
+_GENERIC_NOTE_RE = _re.compile(r'^([SRGMPDNsrgmpdn])([\.\'\^]?)$')
 
 # Matches individual note tokens in a CMN notation line.
 # Handles: S, R2, G3, M2', D., N^, S', etc.; also , and ;
@@ -404,11 +432,48 @@ def convert_cmn_to_ctab(cmn_filepath: str) -> dict:
             meta['Jaathi'] = j.name
             break
 
+    # ── Raaga-aware note resolution ───────────────────────────────────────────
+    ragam = meta.get('Ragam', '').strip()
+    note_map: dict = {}
+    if ragam:
+        try:
+            matches = _raaga_module.search_for_raaga_by_name(ragam, is_exact=True)
+            if not matches:
+                matches = _raaga_module.search_for_raaga_by_name(ragam, is_exact=False)
+            if matches:
+                raaga_id = matches[0][0]
+                aro  = _raaga_module.get_aaroganam(raaga_id)
+                avro = _raaga_module.get_avaroganam(raaga_id)
+                # aarohanam takes priority (processed last → overwrites avro entries)
+                for note in (avro + aro):
+                    clean = note.replace('^', '').replace("'", '').replace('.', '')
+                    if not clean:
+                        continue
+                    base = clean[0].upper()
+                    if base not in note_map:
+                        note_map[base] = clean   # e.g. 'R' → 'R2', 'D' → 'D2'
+        except Exception:
+            note_map = {}   # fall back to no resolution on any error
+
+    def _resolve_token(token: str) -> str:
+        """Resolve generic swara (e.g. 'D') → raaga-specific ('D2'), preserving octave marker."""
+        if not token or not note_map:
+            return token
+        m = _GENERIC_NOTE_RE.match(token)
+        if not m:
+            return token   # already specific (e.g. 'R2') or punctuation (, ; -)
+        base, suffix = m.groups()
+        resolved = note_map.get(base.upper(), base.upper())
+        return resolved + suffix
+
     # Build CTAB rows
     total_aks = get_total_aksharas(thaala_idx, jaathi_idx)
     for row in rows:
         notes  = (row.get('notes',  []) + [''] * total_aks)[:total_aks]
         lyrics = (row.get('lyrics', []) + [''] * total_aks)[:total_aks]
+
+        # Apply raaga-aware resolution to every note token
+        notes = [_resolve_token(n) for n in notes]
 
         data['rows'].append({
             'section':  row['section'],

@@ -53,6 +53,10 @@ class _CellLineEdit(QLineEdit):
         self.field_type = field_type   # 'note' or 'lyric'
         self.cell_ref = cell_ref       # owning NoteCell
 
+    def focusNextPrevChild(self, _next: bool) -> bool:  # noqa: ARG002
+        """Return False so Qt does not consume Tab before keyPressEvent."""
+        return False
+
     def keyPressEvent(self, event):
         key = event.key()
         shift = bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier)
@@ -773,23 +777,22 @@ class TabularEditorDialog(QDialog):
                                 "No MPlayer instance available.")
             return
         try:
-            data = self._collect_data()
-            cmn_text = ctab_parser.convert_to_cmn(data)
-            temp_file = settings._TEMP_PATH + "tabular_play.cmn"
-            with open(temp_file, 'w', encoding='utf-8') as f:
-                f.write(cmn_text)
-            # parse_notation_file applies #D, #S, etc. to settings globals
-            scamp_notes, _, solkattu = cparser.parse_notation_file(temp_file)
+            # Apply tempo to settings so write_to_midifile uses the right BPM
+            try:
+                settings.TEMPO = float(self._meta_tempo.text() or '60')
+            except ValueError:
+                settings.TEMPO = 60.0
+
+            scamp_notes, self._timing_map = self._build_scamp_and_timing()
+
             temp_midi = settings._TEMP_PATH + "tabular_play.mid"
             cmidi.write_to_midifile_from_scamp_notes(
                 scamp_notes, temp_midi,
                 include_percussion_layer=self.include_percussion,
-                solkattu_list=solkattu)
+                solkattu_list=None)
+
             self.mplayer.is_playing = True
             self._btn_play.setEnabled(False)
-
-            # Build the timing map AFTER parsing (settings.TEMPO is now correct)
-            self._timing_map = self._build_timing_map(data)
             self._play_start_time = _time.time()
             self._last_highlighted = (-1, -1)
             self._highlight_timer.start()
@@ -815,38 +818,96 @@ class TabularEditorDialog(QDialog):
             self.mplayer.is_playing = False
             self._btn_play.setEnabled(True)
 
-    # ── Cell Highlighting ──────────────────────────
-    def _build_timing_map(self, data: dict) -> list:
-        """Return list of (start_sec, table_row, table_col) for every
-        note-start event in the grid (skips , and ; prolongation cells)."""
-        try:
-            tempo = float(data['meta'].get('Tempo', '60') or '60')
-        except ValueError:
-            tempo = 60.0
-        full_dur = settings._FULL_NOTE_DURATION   # beats per akshara at speed-1
+    # ── Direct CTAB → MIDI engine ─────────────────
+    # Tokeniser: extracts individual swara tokens from a cell's note text.
+    # Supports concatenated or space-separated tokens, e.g. "D2G3'" or "D2 G3'".
+    # Handles uppercase notes only (S/P without digit; R/G/M/D/N with optional digit 1-4).
+    # Octave markers: '.' (lower) or "'" (upper).  '^' is intentionally excluded
+    # (S^ notation is no longer supported). Trailing glide marker '-' is not
+    # captured so G3- tokenises as G3 (glide is a visual cue only in MIDI mode).
+    _TOKEN_RE = re.compile(r"([SP][.']?|[RGMDN][1-4]?[.']?)")
 
-        timing_map = []
-        current_time = 0.0
+    def _build_scamp_and_timing(self) -> tuple:
+        """Build SCAMP note list and timing map directly from the CTAB grid.
+
+        Returns:
+            scamp_notes  – list of [note_name, [inst_idx, pitch_float, duration_beats]]
+            timing_map   – list of (start_sec, table_row, table_col) for every
+                           cell that starts a note (or is a rest); prolongation
+                           cells (,/;) do NOT add an entry so the previous cell
+                           stays highlighted throughout its extended duration.
+        """
+        tempo     = settings.TEMPO            # already applied by _play
+        full_dur  = settings._FULL_NOTE_DURATION   # beats per akshara at speed-1
+        inst      = settings.INSTRUMENT_INDEX
+        silent_inst = len(settings._ALL_INSTRUMENTS)
+
+        scamp_notes: list = []
+        timing_map:  list = []
+        current_time = 0.0   # seconds (for timing_map)
 
         for grid_row_idx in range(1, self._table.rowCount()):
             spd_w = self._table.cellWidget(grid_row_idx, 1)
-            speed = int(spd_w.currentText()) if spd_w else 1
-            akshara_sec = full_dur / (2 ** (speed - 1)) * (60.0 / tempo)
+            try:
+                speed = int(spd_w.currentText()) if spd_w else 1
+            except (ValueError, AttributeError):
+                speed = 1
+            akshara_beats = full_dur / (2 ** (speed - 1))
+            akshara_sec   = akshara_beats * (60.0 / tempo)
 
             for ci in range(len(self._col_anga_types)):
-                col = _HEADER_FIXED_COLS + ci
-                cell = self._table.cellWidget(grid_row_idx, col)
-                if isinstance(cell, NoteCell):
-                    note_text = cell.note().strip()
-                    if note_text in (',', ';'):
-                        # Prolongation: don't start new timing entry; keep prev highlighted
-                        pass
-                    else:
-                        timing_map.append((current_time, grid_row_idx, col))
+                col       = _HEADER_FIXED_COLS + ci
+                cell      = self._table.cellWidget(grid_row_idx, col)
+                note_text = cell.note().strip() if isinstance(cell, NoteCell) else ''
+
+                # ── Prolongation: , extends last note by 1 akshara ──────────
+                if note_text == ',':
+                    if scamp_notes:
+                        scamp_notes[-1][1][2] += akshara_beats
                     current_time += akshara_sec
-                else:
+                    continue   # no timing_map entry; previous cell stays highlighted
+
+                # ── Prolongation: ; extends last note by 2 aksharas ─────────
+                if note_text == ';':
+                    if scamp_notes:
+                        scamp_notes[-1][1][2] += 2 * akshara_beats
+                    # Timeline advances by 2 aksharas to stay in sync with audio
+                    current_time += 2 * akshara_sec
+                    continue   # no timing_map entry
+
+                # ── Rest / empty cell ────────────────────────────────────────
+                if not note_text or note_text == '-':
+                    timing_map.append((current_time, grid_row_idx, col))
+                    scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
                     current_time += akshara_sec
-        return timing_map
+                    continue
+
+                # ── Note cell (single or multi-note) ────────────────────────
+                tokens = self._TOKEN_RE.findall(note_text.replace(' ', ''))
+                if not tokens:
+                    # Unrecognised content → rest
+                    timing_map.append((current_time, grid_row_idx, col))
+                    scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
+                    current_time += akshara_sec
+                    continue
+
+                token_beats = akshara_beats / len(tokens)
+                # One timing_map entry for the whole cell (start of first sub-note)
+                timing_map.append((current_time, grid_row_idx, col))
+
+                for tok in tokens:
+                    try:
+                        pitch = cparser._get_microtone_pitch(tok)
+                        scamp_notes.append([tok, [inst, pitch, token_beats]])
+                    except Exception:
+                        # Unrecognised note → silence placeholder
+                        scamp_notes.append(['$', [silent_inst, 60.0, token_beats]])
+
+                current_time += akshara_sec
+
+        return scamp_notes, timing_map
+
+    # ── Cell Highlighting ──────────────────────────
 
     def _update_highlight(self):
         """Called by QTimer every ~80 ms during playback."""
