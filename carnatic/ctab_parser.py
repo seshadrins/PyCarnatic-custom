@@ -244,9 +244,11 @@ _CMD_RE = _re.compile(r'^\s*#([DIJMNPST])(\d+)')
 _GENERIC_NOTE_RE = _re.compile(r'^([SRGMPDNsrgmpdn])([\.\'\^]?)$')
 
 # Matches individual note tokens in a CMN notation line.
-# Handles: S, R2, G3, M2', D., N^, S', etc.; also , and ;
+# Handles: S, R2, G3, M2', D., N^, S', G3- (glide); also , ; and standalone -
+# A trailing '-' (glide marker) is captured as part of the note token so it
+# is not treated as a separate rest; the resolver strips it later.
 _CMN_NOTE_RE = _re.compile(
-    r'([SsRrGgMmPpDdNn][1-4]?[\.\'\^]?|[,;])'
+    r'([SsRrGgMmPpDdNn][1-4]?[\.\'\^]?-?|[,;\-])'
 )
 
 # Known section keywords (lowercase) → canonical CTAB section name
@@ -456,14 +458,53 @@ def convert_cmn_to_ctab(cmn_filepath: str) -> dict:
             note_map = {}   # fall back to no resolution on any error
 
     def _resolve_token(token: str) -> str:
-        """Resolve generic swara (e.g. 'D') → raaga-specific ('D2'), preserving octave marker."""
-        if not token or not note_map:
+        """Resolve a CMN token to a CTAB-compatible note.
+
+        Conversions applied (in order):
+        1. Punctuation / rest tokens (, ; -) pass through unchanged.
+        2. Trailing '-' (glide marker) is stripped – it is a performance cue
+           only and has no meaning in the CTAB grid.
+        3. '^' (caret = upper octave in legacy CMN) is replaced with "'"
+        4. Lowercase base letter → mandra sthayi: add '.' suffix unless an
+           explicit octave marker is already present.
+        5. For digit-qualified tokens that are already specific (e.g. 'R2',
+           'G3.') no raaga-map lookup is performed.
+        6. Generic bare-letter tokens (e.g. 'R', 'D') are resolved through
+           the raaga note_map (e.g. 'R' → 'R2').
+        """
+        if not token or token in (',', ';', '-'):
             return token
+        # Strip trailing glide marker
+        if token.endswith('-'):
+            token = token[:-1]
+        if not token:
+            return ''
+        # Legacy caret → upper-octave apostrophe
+        token = token.replace('^', "'")
+        # Digit-qualified tokens (e.g. 'R2', "G3'", 'r2')
+        if len(token) >= 2 and token[1].isdigit():
+            if token[0].islower():
+                # Mandra sthayi: lowercase base + digit, no explicit octave
+                upper = token[0].upper() + token[1:]
+                if not upper.endswith(('.', "'")):
+                    upper += '.'
+                return upper
+            return token   # already fully specified (e.g. 'R2', "D2'")
+        # Generic single letter (possibly with octave suffix)
         m = _GENERIC_NOTE_RE.match(token)
         if not m:
-            return token   # already specific (e.g. 'R2') or punctuation (, ; -)
+            return token
         base, suffix = m.groups()
+        is_lower = base.islower()
+        if not note_map:
+            # No raaga – just normalise case/octave
+            if is_lower and not suffix:
+                return base.upper() + '.'
+            return base.upper() + suffix
         resolved = note_map.get(base.upper(), base.upper())
+        # Lowercase without explicit octave marker → mandra sthayi
+        if is_lower and not suffix:
+            suffix = '.'
         return resolved + suffix
 
     # Build CTAB rows

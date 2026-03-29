@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
     QApplication, QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox,
     QLabel, QLineEdit, QComboBox, QPushButton, QTableWidget,
     QTableWidgetItem, QWidget, QSizePolicy, QFileDialog,
-    QMessageBox, QHeaderView, QAbstractItemView, QFrame,
+    QMessageBox, QHeaderView, QAbstractItemView, QFrame, QCheckBox,
 )
 from PyQt6.QtGui import QColor, QFont
 from carnatic import settings, cparser, cmidi
@@ -129,6 +129,10 @@ class NoteCell(QWidget):
     """One akshara cell with a note field (top) and lyric field (bottom).
     Supports Tab/Arrow navigation and smart swara resolution."""
 
+    def focusNextPrevChild(self, _next: bool) -> bool:
+        """Prevent Qt's focus chain from consuming Tab at the widget level."""
+        return False
+
     def __init__(self, anga_type: str = 'L', parent=None):
         super().__init__(parent)
         self.anga_type = anga_type
@@ -178,7 +182,8 @@ class NoteCell(QWidget):
         """Resolve a generic swara (e.g. 'R') to its raaga-specific variant."""
         if self.editor_ref:
             raw = self.note_edit.text().strip()
-            resolved = self.editor_ref._resolve_note(raw)
+            resolved = self.editor_ref._resolve_note(
+                raw, self.table_row, self.table_col)
             if resolved != raw:
                 self.note_edit.setText(resolved)
 
@@ -213,7 +218,9 @@ class TabularEditorDialog(QDialog):
         self.include_percussion = include_percussion
         self._filepath = ""
         self._data = ctab_parser.create_empty_data()
-        self._note_map: dict = {}          # base-note → specific variant (e.g. 'R' → 'R2')
+        self._note_map: dict = {}          # combined base-note → specific variant
+        self._aro_note_map: dict = {}      # aarohanam-specific note map
+        self._avro_note_map: dict = {}     # avarohanam-specific note map
         self._current_raaga_id = None      # int raaga index from raaga module
         self._cmn_editor = None            # reference to CMN TutorUI window
 
@@ -442,6 +449,14 @@ class TabularEditorDialog(QDialog):
             self._pb_drums_on.setCurrentIndex(0)
         row.addWidget(self._pb_drums_on)
 
+        # Smart (direction-aware) swara resolution toggle
+        self._chk_smart_resolve = QCheckBox("↕ Direction-aware resolve")
+        self._chk_smart_resolve.setToolTip(
+            "When checked, swara auto-resolution uses the preceding note's\n"
+            "pitch to pick the aarohanam or avarohanam variant automatically.")
+        self._chk_smart_resolve.setChecked(True)
+        row.addWidget(self._chk_smart_resolve)
+
         row.addStretch()
 
         # Wire up signals
@@ -551,8 +566,18 @@ class TabularEditorDialog(QDialog):
             self._insert_row_from_data(row_data)
 
     def _add_avartam_row(self):
-        """Append an empty avartam row to the table."""
-        r = self._table.rowCount()
+        """Insert an empty avartam row.
+
+        If any data rows are selected the new row is inserted immediately after
+        the last selected row; otherwise it is appended at the end.
+        """
+        selected = sorted(
+            {i.row() for i in self._table.selectedItems() if i.row() > 0})
+        insert_at = selected[-1] + 1 if selected else self._table.rowCount()
+        self._insert_avartam_at(insert_at)
+
+    def _insert_avartam_at(self, r: int):
+        """Insert a blank avartam row at table row index *r* and refresh refs."""
         self._table.insertRow(r)
         self._table.setRowHeight(r, 52)
         self._init_fixed_cells(r)
@@ -563,6 +588,18 @@ class TabularEditorDialog(QDialog):
             cell.table_row = r
             cell.table_col = col
             self._table.setCellWidget(r, col, cell)
+        self._refresh_cell_refs()
+
+    def _refresh_cell_refs(self):
+        """Update table_row / table_col on every NoteCell after structural changes
+        (insertions, deletions, reloads) so keyboard navigation stays accurate."""
+        for r in range(1, self._table.rowCount()):
+            for ci in range(len(self._col_anga_types)):
+                col = _HEADER_FIXED_COLS + ci
+                cell = self._table.cellWidget(r, col)
+                if isinstance(cell, NoteCell):
+                    cell.table_row = r
+                    cell.table_col = col
 
     def _insert_row_from_data(self, note_lyric_pair: dict):
         """Insert a row from saved data {'section','speed','bar','notes','lyrics'}."""
@@ -700,6 +737,7 @@ class TabularEditorDialog(QDialog):
             data = ctab_parser.read_ctab(path)
             self._filepath = path
             self._data = data
+            self._table.setRowCount(0)   # clear old rows before loading
             self._populate_grid_from_data(data)
             self.setWindowTitle(
                 f"Tabular Notation Editor – {os.path.basename(path)}")
@@ -846,7 +884,14 @@ class TabularEditorDialog(QDialog):
         timing_map:  list = []
         current_time = 0.0   # seconds (for timing_map)
 
-        for grid_row_idx in range(1, self._table.rowCount()):
+        # Play only selected rows (if any), else play all data rows.
+        selected_rows = {
+            i.row() for i in self._table.selectedItems() if i.row() > 0}
+        rows_to_play = (sorted(selected_rows)
+                        if selected_rows
+                        else list(range(1, self._table.rowCount())))
+
+        for grid_row_idx in rows_to_play:
             spd_w = self._table.cellWidget(grid_row_idx, 1)
             try:
                 speed = int(spd_w.currentText()) if spd_w else 1
@@ -1019,6 +1064,8 @@ class TabularEditorDialog(QDialog):
             self._meta_avarohanam_label.setText("—")
             self._meta_mela.setText("")
             self._note_map = {}
+            self._aro_note_map = {}
+            self._avro_note_map = {}
             self._current_raaga_id = None
             return
 
@@ -1046,23 +1093,61 @@ class TabularEditorDialog(QDialog):
         self._build_note_map(aro, avro)
 
     def _build_note_map(self, aro: list, avro: list):
-        """Build mapping from generic swara letter → raaga-specific variant.
-        E.g. 'R' → 'R2' for Kalyani, 'M' → 'M2' for Kalyani."""
-        self._note_map = {}
-        # Process avarohanam first, then aarohanam (aarohanam takes priority for ambiguous notes)
-        for note in (avro + aro):
-            # Strip octave markers (^, ', .)
-            clean = note.replace('^', '').replace("'", '').replace('.', '')
-            if not clean:
-                continue
-            base = clean[0].upper()   # 'S', 'R', 'G', 'M', 'P', 'D', 'N'
-            if base not in self._note_map:
-                self._note_map[base] = clean  # e.g. 'R' → 'R2'
+        """Build aarohanam, avarohanam, and combined note maps.
 
-    def _resolve_note(self, raw: str) -> str:
+        Each map is  base-letter → raaga-specific variant (e.g. 'R' → 'R2').
+        The combined map uses aarohanam variants as the default (aro takes
+        priority for notes that appear in both scales).
+        """
+        def _make_map(notes):
+            m = {}
+            for note in notes:
+                clean = note.replace('^', '').replace("'", '').replace('.', '')
+                if not clean:
+                    continue
+                base = clean[0].upper()
+                if base not in m:
+                    m[base] = clean
+            return m
+
+        self._aro_note_map  = _make_map(aro)
+        self._avro_note_map = _make_map(avro)
+        # Combined: aarohanam takes priority
+        self._note_map = {**self._avro_note_map, **self._aro_note_map}
+
+    # Scale-position order for directional detection (0=lowest, 6=highest in octave)
+    _SWARA_ORDER = {'S': 0, 'R': 1, 'G': 2, 'M': 3, 'P': 4, 'D': 5, 'N': 6}
+
+    def _find_predecessor_swara_pos(self, row: int, col: int) -> int:
+        """Return the scale position (0–6) of the closest non-empty, non-punctuation
+        note that appears *before* the cell at (row, col).  Returns -1 if none found."""
+        total_cols = self._table.columnCount()
+        scan_row, scan_col = row, col - 1
+        while True:
+            if scan_col < _HEADER_FIXED_COLS:
+                scan_row -= 1
+                if scan_row < 1:
+                    return -1
+                scan_col = total_cols - 1
+            cell = self._table.cellWidget(scan_row, scan_col)
+            if isinstance(cell, NoteCell):
+                note = cell.note().strip()
+                if note and note not in (',', ';', '-'):
+                    for ch in note:
+                        if ch.upper() in self._SWARA_ORDER:
+                            return self._SWARA_ORDER[ch.upper()]
+            scan_col -= 1
+
+    def _resolve_note(self, raw: str,
+                      cell_row: int = -1, cell_col: int = -1) -> str:
         """Resolve a generic swara to its raaga-specific variant, preserving octave markers.
         Examples: 'R' -> 'R2', "R'" -> "R2'", '.R' -> '.R2'.
-        Already-specific notes (e.g. 'R2') pass through unchanged."""
+        Already-specific notes (e.g. 'R2') pass through unchanged.
+
+        When direction-aware resolution is enabled (checkbox checked), the
+        predecessor note's scale position is used to select the aarohanam or
+        avarohanam variant automatically.
+        """
         if not raw or not self._note_map:
             return raw
         # Match: optional leading dots (lower octave), bare letter (no digit follows),
@@ -1071,7 +1156,24 @@ class TabularEditorDialog(QDialog):
         if not m:
             return raw  # already specific (e.g. 'R2') or non-note ('-', '=', '.')
         prefix, base, suffix = m.groups()
-        resolved = self._note_map.get(base.upper(), base.upper())
+
+        # Choose note map
+        use_smart = (
+            hasattr(self, '_chk_smart_resolve')
+            and self._chk_smart_resolve.isChecked()
+            and cell_row > 0 and cell_col >= _HEADER_FIXED_COLS
+        )
+        note_map = self._note_map  # default: combined (aro takes priority)
+        if use_smart and (self._aro_note_map or self._avro_note_map):
+            pred_pos = self._find_predecessor_swara_pos(cell_row, cell_col)
+            curr_pos = self._SWARA_ORDER.get(base.upper(), -1)
+            if pred_pos >= 0 and curr_pos >= 0:
+                if curr_pos >= pred_pos:
+                    note_map = self._aro_note_map or self._note_map   # ascending
+                else:
+                    note_map = self._avro_note_map or self._note_map  # descending
+
+        resolved = note_map.get(base.upper(), self._note_map.get(base.upper(), base.upper()))
         return prefix + resolved + suffix
 
     # ── Scale Playback ──────────────────────────────
