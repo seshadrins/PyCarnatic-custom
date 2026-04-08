@@ -1,12 +1,12 @@
 {Geetham
-#M28
-{Scale: Mohanam
-{ Ragam: Mohanam
+#M15
+{Scale: Malahari
+{ Ragam: Malahari
 { Talam: Triputa (Chathurasra Jathi)
 #T4
 #J2
 #D60
 {Aarohanam:
-S R2 G3 P | D2 S^ | - - ||
+S R1 M1 P | D1 S^ | - - ||
 {Avarohanam:
-S^ D2 P G3 | R2 S | - - ||
+S^ D1 P M1 | G2 R1 | S - ||

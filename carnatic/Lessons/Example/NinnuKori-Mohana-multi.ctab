@@ -1,0 +1,61 @@
+Type|Geetham
+Title|
+Ragam|Mohanam
+Melakartha|28
+Thaalam|THRIPUTAI
+Jaathi|CHATHUSRA
+Tempo|60
+Composer|
+Language|Tamil
+Description|
+AvartamsPerLine|2
+---
+Section|Speed|Bar|RowType|A1|A2|A3|A4|A5|A6|A7|A8
+Pallavi|2|1|N|G3|,|G3|,|R2|,|,|,
+Pallavi|2|1|L|NI|.|NNU|.|KO|.|.|.
+Pallavi|2|2|N|S|R2|G3|R2|S|R2|S|D2.
+Pallavi|2|2|L|YU|.|.|.|NN|AA|.|NU
+Pallavi|2|3|N|G3|P|G3|G3|R2|S-|R2|G3
+Pallavi|2|3|L|NI|.|.|.|.|.|KHI|.
+Pallavi|2|4|N|G3|P|G3|P|D2|P|D2|S'
+Pallavi|2|4|L|LO|.|.|KA|.|.|NA|A
+Pallavi|2|5|N|D2|D2|P-|G3|D2|P|G3|R2
+Pallavi|2|5|L|.|.|.|.|YA|.|KA|.
+Pallavi|2|6|N|G3|,|G3|,|P|,|,|,
+Pallavi|2|6|L|NA|.|NNU|.|PA|A|.|.
+Anupallavi|2|7|N|D2|S'|D2|D2|P|G3-|D2|P
+Anupallavi|2|7|L|SA|.|MA|.|.|.|YA|.
+Anupallavi|2|8|N|G3|G3|P|P|D2|P|D2|S'
+Anupallavi|2|8|L|.|MI|.|.|DE|.|.|.
+Anupallavi|2|9|N|D2|S'|R2'|S'|,'|D2|P|D2
+Anupallavi|2|9|L|NA|A|.|.|.|.|ME|E
+Anupallavi|2|10|N|S'|D2|,|P|G3|R2|S|R2
+Anupallavi|2|10|L|.|DA|.|.|KRU|.|PA|.
+Anupallavi|2|16|N|S'|D2|,|P|G3|R2|S|R2
+Anupallavi|2|16|L|.|.|JO|.|.|DA|.|.
+Anupallavi|2|17|N||||||||
+Anupallavi|2|17|L|RA|.|.|.|DA|.|.|.
+Muktayi Swaram|2|17|N|G3|,|R2|G3|R2|S|R2|,
+Muktayi Swaram|2|18|N|S|R2|S|G3|R2|G3|S|R2
+Muktayi Swaram|2|19|N|G3|P|D2|,|P|,|,|,
+Muktayi Swaram|2|20|N|G3|P|D2|P|D2|S'|R2'|G3'
+Muktayi Swaram|2|21|N|R2'|,|G3'|S'|,|R2'|D2|,
+Muktayi Swaram|2|22|N||||||||
+Muktayi Swaram|2|23|N|S'|P|,|D2|S'|R2'|G3'|S'
+Muktayi Swaram|2|24|N|,|D2|P|,|G|R2|S|R2
+Muktayi Swaram|2|25|N||||||||
+Muktayi Swaram|2|25|L|SA|.|NNU|.|TH|AAN|.|.
+Muktayi Swaram|2|26|N|G3|,|G3|,|G3|P|G3|R2
+Charanam 1|2|6|N|R2|G3|P|G3|P|,|P|,
+Charanam 1|2|6|L|GA|.|.|.|.|.|SRI|.
+Charanam 1|2|7|N|G3|G3|D2|P|D2|,|G3|D2
+Charanam 1|2|7|L|NI|.|.|.|.|.|.|.
+Charanam 1|2|8|N|D2|P|G3|P|G3|R2|S|R2
+Charanam 1|2|8|L|.|.|VA|A|.|.|SA|.
+Charanam 1|2|9|N||||||||
+Other|2|1|N|R2|,|,|,|G3|,|R2|,
+Other|2|2|N|G3|,|G3|S'|D2|P|G3|R2
+Other|2|3|N|S'|S'|,|D2|P|,|G3|R2
+Other|2|4|N|R2'|S'|D2|P|G3|R2|S|R2
+Other|2|5|N||||||||
+Other|2|6|N||||||||

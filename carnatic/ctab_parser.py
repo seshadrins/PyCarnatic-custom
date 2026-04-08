@@ -43,6 +43,7 @@ _DEFAULT_META = {
     'Type': 'Geetham', 'Title': '', 'Ragam': '', 'Melakartha': '15',
     'Thaalam': 'THRIPUTAI', 'Jaathi': 'CHATHUSRA',
     'Tempo': '60', 'Composer': '', 'Language': 'Sanskrit', 'Description': '',
+    'AvartamsPerLine': '1',
 }
 
 
@@ -166,11 +167,20 @@ def write_ctab(data: dict, filepath: str):
 
 
 def convert_to_cmn(data: dict) -> str:
-    """Convert ctab data dict to .cmn notation string."""
+    """Convert ctab data dict to .cmn notation string.
+
+    When AvartamsPerLine > 1, consecutive avartam rows are grouped onto the
+    same CMN line, separated by ' || ' between groups with a final ' ||'.
+    This exactly reverses what convert_cmn_to_ctab produces.
+    """
     meta = data['meta']
     ti = get_thaala_index(meta.get('Thaalam', 'THRIPUTAI'))
     ji = get_jaathi_index(meta.get('Jaathi', 'CHATHUSRA'))
     anga_struct = get_anga_structure(ti, ji)
+    try:
+        avartams_per_line = max(1, int(meta.get('AvartamsPerLine', '1') or '1'))
+    except ValueError:
+        avartams_per_line = 1
 
     lines = []
     lines.append(f"{{ {meta.get('Type', 'Geetham')}")
@@ -199,9 +209,26 @@ def convert_to_cmn(data: dict) -> str:
         else:
             lyric_rows[key] = row
 
+    def _build_avartam(aksharas):
+        """Render one avartam as a CMN segment (no trailing ||)."""
+        parts = []
+        idx = 0
+        for _, _, size in anga_struct:
+            group = []
+            for _ in range(size):
+                cell = aksharas[idx].strip() if idx < len(aksharas) else ''
+                group.append(cell if cell else '-')
+                idx += 1
+            parts.append(' '.join(group))
+        return ' | '.join(parts)
+
     prev_section, prev_speed = None, None
-    for key in order:
-        section, speed, bar = key
+    i = 0
+    while i < len(order):
+        # Collect avartams_per_line consecutive keys for one CMN line
+        group_keys = order[i:i + avartams_per_line]
+        section, speed, _ = group_keys[0]
+
         if section != prev_section:
             lines.append(f"{{ {section}:")
             prev_section = section
@@ -210,26 +237,24 @@ def convert_to_cmn(data: dict) -> str:
             lines.append(f"#S{speed_val}")
             prev_speed = speed_val
 
-        note_row = note_rows.get(key)
-        lyric_row = lyric_rows.get(key)
+        # Build note line: avartam1 || avartam2 || ...
+        note_segments, lyric_segments = [], []
+        for key in group_keys:
+            nr = note_rows.get(key)
+            lr = lyric_rows.get(key)
+            note_segments.append(
+                _build_avartam(nr.get('aksharas', [])) if nr else _build_avartam([]))
+            lyric_segments.append(
+                _build_avartam(lr.get('aksharas', [])) if lr else None)
 
-        def _build_line(aksharas):
-            parts = []
-            idx = 0
-            for _, _, size in anga_struct:
-                group = []
-                for _ in range(size):
-                    cell = aksharas[idx].strip() if idx < len(aksharas) else ''
-                    group.append(cell if cell else '-')
-                    idx += 1
-                parts.append(' '.join(group))
-            return ' | '.join(parts) + ' ||'
-
-        if note_row:
-            lines.append(_build_line(note_row.get('aksharas', [])))
-        if lyric_row:
-            lyric_line = _build_line(lyric_row.get('aksharas', []))
+        lines.append(' || '.join(note_segments) + ' ||')
+        if any(s is not None for s in lyric_segments):
+            lyric_line = ' || '.join(
+                s if s is not None else _build_avartam([])
+                for s in lyric_segments) + ' ||'
             lines.append('{ ' + lyric_line)
+
+        i += avartams_per_line
 
     return '\n'.join(lines)
 

@@ -99,20 +99,19 @@ def write_to_midifile_from_scamp_notes(scamp_note_list,midi_file_name = 'output.
         midi_file.addNote(track=0, channel=0, pitch=round(pitch),time=cum_time_in_seconds,
                           duration=time_in_seconds,volume=settings._INSTRUMENT_VOLUME_LEVELS[instrument_index])
         cum_time_in_seconds += time_in_seconds
-    if include_percussion_layer and solkattu_list != None:
+    if include_percussion_layer and solkattu_list is not None:
         cum_time_in_seconds = 0.0
-        for _,(instrument, pitch,durn) in solkattu_list:
-            instrument_index = instrument #instrument_list.index(instrument)
-            time_in_seconds = durn # _get_time_in_beats(durn)
-            if note=='$':
-                instrument_index = len(settings._ALL_INSTRUMENTS)+1
-                #print('silent',note,instrument, instrument_index, pitch,time_in_seconds,cum_time_in_seconds)
+        for beat_name, (instrument, pitch, durn) in solkattu_list:
+            instrument_index = instrument
+            time_in_seconds = durn
+            if beat_name == '$':
                 cum_time_in_seconds += time_in_seconds
                 continue
-            #print('percussion',note,instrument, instrument_index, pitch,time_in_seconds,cum_time_in_seconds)
-            midi_file.addProgramChange(1, channel=0, time=cum_time_in_seconds, program=instrument_index)
-            midi_file.addNote(track=1, channel=0, pitch=round(pitch),time=cum_time_in_seconds,
-                              duration=time_in_seconds,volume=settings._INSTRUMENT_VOLUME_LEVELS[instrument_index])
+            # Use channel 9 for percussion (GM standard) on track 1
+            midi_file.addProgramChange(1, channel=9, time=cum_time_in_seconds, program=instrument_index)
+            midi_file.addNote(track=1, channel=9, pitch=round(pitch),
+                              time=cum_time_in_seconds, duration=time_in_seconds,
+                              volume=100)
             cum_time_in_seconds += time_in_seconds
     with open(midi_file_name, 'wb') as binfile:
         midi_file.writeFile(binfile)
