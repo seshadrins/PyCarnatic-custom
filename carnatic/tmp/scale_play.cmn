@@ -1,12 +1,12 @@
 {Geetham
-#M29
-{Scale: Hamsadhwani
-{ Ragam: Hamsadhwani
+#M28
+{Scale: Mohanam
+{ Ragam: Mohanam
 { Talam: Triputa (Chathurasra Jathi)
 #T4
 #J2
 #D60
 {Aarohanam:
-S R2 G3 P | N3 S^ | - - ||
+S R2 G3 P | D2 S^ | - - ||
 {Avarohanam:
-S^ N3 P G3 | R2 S | - - ||
+S^ D2 P G3 | R2 S | - - ||
