@@ -19,12 +19,29 @@ class MPlayer(sf2.sf2_loader):
     def start(self):
         # pygame is already initialised in __init__; nothing more needed here.
         self.is_playing = False
-    def play_midi_file(self,midi_file):
+    def play_midi_file(self, midi_file, on_audio_start=None):
+        """Synthesise and play a MIDI file.
+
+        sf2_loader.play_midi_file performs *offline synthesis* (export_midi_file)
+        before any audio is emitted, which can take several hundred milliseconds.
+        To allow callers to capture ``_play_start_time`` at the exact moment audio
+        begins (rather than at the start of synthesis), pass an optional
+        ``on_audio_start`` callback.  It is invoked on the background thread
+        immediately before pygame starts emitting samples.
+        """
         if not os.path.exists(midi_file):
             raise FileNotFoundError("midi file: " + midi_file + ' does not exist')
         self.is_playing = True
+        print('synthesising midi file', midi_file)
+        # Step 1 – offline synthesis (slow: renders the whole piece to a WAV buffer)
+        audio = self.loader.export_midi_file(midi_file, get_audio=True)
+        # Step 2 – notify caller that audio is about to start
+        if on_audio_start is not None:
+            on_audio_start()
         print('playing midi file', midi_file)
-        self.loader.play_midi_file(midi_file)
+        # Step 3 – start playback (non-blocking)
+        import sf2_loader as _sf2
+        _sf2.play_sound(audio, wait=False)
         # Wait for playback to finish.  pygame.event.poll() must NOT be called
         # from a background thread on Windows, so we just sleep.
         while mp.pygame.mixer.get_busy():

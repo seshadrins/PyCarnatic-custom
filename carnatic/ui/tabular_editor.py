@@ -647,10 +647,19 @@ class TabularEditorDialog(QDialog):
         self._insert_avartam_at(insert_at)
 
     def _insert_avartam_at(self, r: int):
-        """Insert a blank display row at table row index *r* and refresh refs."""
+        """Insert a blank display row at table row index *r* and refresh refs.
+
+        The bar number shown in column 2 is the first avartam number of this
+        display row: (data_rows_before * N) + 1, where data_rows_before is the
+        number of display rows already in the table before position r.
+        """
+        # r=1 is the first data row (row 0 is the anga header).
+        # data_rows_before = number of data rows above the insertion point.
+        data_rows_before = r - 1
+        starting_bar = data_rows_before * self._avartams_per_line + 1
         self._table.insertRow(r)
         self._table.setRowHeight(r, 52)
-        self._init_fixed_cells(r)
+        self._init_fixed_cells(r, bar=str(starting_bar))
         for ci, atype in enumerate(self._col_anga_types):
             col = _HEADER_FIXED_COLS + ci
             if atype == 'SEP':
@@ -764,10 +773,16 @@ class TabularEditorDialog(QDialog):
         return result
 
     def _collect_data(self) -> dict:
-        """Build a ctab data dict – one CTAB row per avartam (not per display row)."""
+        """Build a ctab data dict – one CTAB row per avartam (not per display row).
+
+        Bar numbers are assigned by a global sequential counter (1, 2, 3, …)
+        so they are always unique across all display rows regardless of what
+        the UI bar column shows.  This prevents key collisions during reload.
+        """
         data = {'meta': self._read_metadata_from_panel(), 'rows': []}
         n = self._avartams_per_line
         aks = self._aksharas_per_avartam
+        global_bar = 1   # ever-increasing; never clashes between display rows
         for rd in self._collect_grid_rows():
             notes_flat = rd['notes']    # length = n * aks
             lyrics_flat = rd['lyrics']
@@ -776,10 +791,8 @@ class TabularEditorDialog(QDialog):
                                 + [''] * aks)[:aks]
                 chunk_lyrics = (lyrics_flat[i*aks:(i+1)*aks]
                                 + [''] * aks)[:aks]
-                try:
-                    bar = str(int(rd['bar']) + i)
-                except ValueError:
-                    bar = rd['bar'] if i == 0 else str(i + 1)
+                bar = str(global_bar)
+                global_bar += 1
                 data['rows'].append({
                     'section': rd['section'], 'speed': rd['speed'],
                     'bar': bar, 'row_type': 'N', 'aksharas': chunk_notes,
@@ -999,13 +1012,24 @@ class TabularEditorDialog(QDialog):
 
             self.mplayer.is_playing = True
             self._btn_play.setEnabled(False)
-            self._play_start_time = _time.time()
+            # _play_start_time stays None until the on_audio_start callback
+            # fires inside MPlayer.play_midi_file – right between synthesis and
+            # the actual play_sound call.  The highlight timer returns early
+            # (via the None guard below) during the synthesis phase, then starts
+            # tracking from the moment the first audio sample is emitted.
+            self._play_start_time = None
             self._last_highlighted = (-1, -1)
             self._highlight_timer.start()
 
             def _bg():
                 try:
-                    self.mplayer.play_midi_file(temp_midi)
+                    def _on_audio_start():
+                        # Called by MPlayer right before play_sound(); this is
+                        # the closest possible point to actual audio emission.
+                        self._play_start_time = _time.time()
+
+                    self.mplayer.play_midi_file(temp_midi,
+                                                on_audio_start=_on_audio_start)
                 except Exception as ex:
                     print("Playback error:", ex)
                 finally:
@@ -1140,6 +1164,12 @@ class TabularEditorDialog(QDialog):
             self._highlight_timer.stop()
             self._clear_all_highlights()
             self._btn_play.setEnabled(True)
+            return
+
+        # The background thread sets _play_start_time right before calling
+        # play_midi_file.  Guard against the brief window where the timer
+        # fires before the thread has had a chance to set it.
+        if self._play_start_time is None:
             return
 
         elapsed = _time.time() - self._play_start_time
