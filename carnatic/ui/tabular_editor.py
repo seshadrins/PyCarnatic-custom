@@ -234,11 +234,13 @@ class TabularEditorDialog(QDialog):
 
         # Playback cell-highlighting support
         self._highlight_timer = QTimer(self)
-        self._highlight_timer.setInterval(80)   # ~12 fps polling
+        self._highlight_timer.setInterval(30)   # ~33 fps – tight enough for smooth sync
         self._highlight_timer.timeout.connect(self._update_highlight)
         self._timing_map: list = []             # [(start_sec, row, col), ...]
+        self._row_transitions: list = []        # [(start_sec, row)] – one entry per new row
         self._play_start_time: float = 0.0
         self._last_highlighted: tuple = (-1, -1)
+        self._pre_scroll_idx: int = 0           # next _row_transitions index to pre-scroll to
 
         self.setWindowTitle("Tabular Notation Editor (.ctab)")
         self.setMinimumSize(900, 600)
@@ -1004,6 +1006,17 @@ class TabularEditorDialog(QDialog):
 
             scamp_notes, self._timing_map, perc_list = self._build_scamp_and_timing()
 
+            # Build row-transition schedule: one entry each time the active
+            # row changes.  Used by _update_highlight to pre-scroll the next
+            # row into view ~300 ms before the highlight reaches it.
+            self._row_transitions = []
+            _last_rt_row = -1
+            for (start, trow, _tcol) in self._timing_map:
+                if trow != _last_rt_row:
+                    self._row_transitions.append((start, trow))
+                    _last_rt_row = trow
+            self._pre_scroll_idx = 0   # reset so row 1 is always scrolled to first
+
             temp_midi = settings._TEMP_PATH + "tabular_play.mid"
             cmidi.write_to_midifile_from_scamp_notes(
                 scamp_notes, temp_midi,
@@ -1158,21 +1171,69 @@ class TabularEditorDialog(QDialog):
 
     # ── Cell Highlighting ──────────────────────────
 
+    # How far ahead (seconds) to check for an upcoming off-screen row.
+    # 500 ms gives Qt enough time to finish the layout+repaint before the
+    # highlight timer reaches the first cell of the newly scrolled-in row.
+    _PRE_SCROLL_SEC = 0.5
+
     def _update_highlight(self):
-        """Called by QTimer every ~80 ms during playback."""
+        """Called by QTimer every ~30 ms during playback.
+
+        Highlighting and scrolling are intentionally decoupled:
+
+        * **Highlighting** (cell colour): plain stylesheet swap — no layout
+          work, always fast.
+
+        * **Scrolling**: proactive, using a monotonic index into
+          ``_row_transitions``.  A scroll is issued only when the upcoming row
+          is **not already visible** in the viewport.  If all rows fit on
+          screen no scroll is ever issued.  When a scroll IS needed,
+          ``PositionAtTop`` brings the new row to the top so several
+          subsequent rows also become visible, avoiding repeated per-line
+          scrolls for the rows that follow.
+        """
         if not self.mplayer or not self.mplayer.is_playing:
             self._highlight_timer.stop()
             self._clear_all_highlights()
             self._btn_play.setEnabled(True)
             return
 
-        # The background thread sets _play_start_time right before calling
-        # play_midi_file.  Guard against the brief window where the timer
-        # fires before the thread has had a chance to set it.
+        # Guard: synthesis is still running; _play_start_time not set yet.
         if self._play_start_time is None:
             return
 
         elapsed = _time.time() - self._play_start_time
+
+        # ── Pre-scroll: only when the upcoming row is off-screen ─────────────
+        # The monotonic _pre_scroll_idx guarantees we never scroll backward.
+        #
+        # We use rowViewportPosition(row) to test visibility, NOT visualRect().
+        # visualRect() can return coordinates that still intersect the viewport
+        # rect for rows that are just outside the scrollable area, producing
+        # false "visible" results.  rowViewportPosition(row) directly gives
+        # the row's y-coordinate in viewport space:
+        #   < 0              → row is above the visible area
+        #   0 … vp_h-row_h  → row is fully visible
+        #   ≥ vp_h           → row is below the visible area (needs scroll)
+        future = elapsed + self._PRE_SCROLL_SEC
+        vp_h   = self._table.viewport().height()
+        while self._pre_scroll_idx < len(self._row_transitions):
+            start, trow = self._row_transitions[self._pre_scroll_idx]
+            if start > future:
+                break   # next transition is more than 500 ms away – wait
+            # This row starts within the lookahead window (or is already active).
+            # Only scroll if the row is genuinely outside the viewport.
+            row_y = self._table.rowViewportPosition(trow)
+            row_h = self._table.rowHeight(trow)
+            off_screen = (row_y < 0) or (row_y + row_h > vp_h)
+            if off_screen:
+                # Scroll so this row appears at the top of the viewport; rows
+                # below it also become visible, avoiding per-line scrolling.
+                idx = self._table.model().index(trow, _HEADER_FIXED_COLS)
+                self._table.scrollTo(idx, self._table.ScrollHint.PositionAtTop)
+            self._pre_scroll_idx += 1
+
+        # ── Highlight: find the most-recent timing entry whose start ≤ elapsed ─
         active = (-1, -1)
         for (start, trow, tcol) in self._timing_map:
             if start <= elapsed:
@@ -1181,15 +1242,14 @@ class TabularEditorDialog(QDialog):
                 break
 
         if active != self._last_highlighted:
-            # Clear old highlight
             if self._last_highlighted != (-1, -1):
                 pr, pc = self._last_highlighted
                 self._set_cell_highlight(pr, pc, highlighted=False)
-            # Apply new highlight
             if active != (-1, -1):
                 r, c = active
                 self._set_cell_highlight(r, c, highlighted=True)
-                self._table.scrollTo(self._table.model().index(r, c))
+                # No scrollTo here – scrolling is handled by the pre-scroll
+                # block above so the cell is already in view when we arrive.
             self._last_highlighted = active
 
     def _set_cell_highlight(self, row: int, col: int, highlighted: bool):
