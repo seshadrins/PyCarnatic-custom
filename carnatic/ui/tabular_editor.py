@@ -33,6 +33,8 @@ _LYRIC_BG = QColor(255, 255, 204)
 _HIGHLIGHT_NOTE_BG  = QColor(255, 215, 0)    # gold for active note
 _HIGHLIGHT_LYRIC_BG = QColor(255, 193, 7)    # amber for active lyric
 _HEADER_FIXED_COLS = 3   # Section | Speed | Bar
+_NOTE_CELL_MAX_CHARS = 15
+_NOTE_CELL_WIDTH = 120
 
 # Kattai (Shruti) → MIDI base note for Sa
 _KATTAI_TO_BASE_NOTE = {
@@ -143,7 +145,7 @@ class NoteCell(QWidget):
         # Note input (top half) – uses navigable line-edit
         self.note_edit = _CellLineEdit('note', self)
         self.note_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.note_edit.setMaxLength(10)
+        self.note_edit.setMaxLength(_NOTE_CELL_MAX_CHARS)
         self.note_edit.setToolTip("Enter note (e.g. S, R, P, D, S', -). "
                                   "Auto-resolves to raaga variant on Tab/Enter.")
         self.note_edit.setStyleSheet(
@@ -593,7 +595,7 @@ class TabularEditorDialog(QDialog):
                 ci += 1
             for atype in base_types:
                 col = _HEADER_FIXED_COLS + ci
-                self._table.setColumnWidth(col, 55)
+                self._table.setColumnWidth(col, _NOTE_CELL_WIDTH)
                 hdr = self._table.horizontalHeaderItem(col)
                 if hdr:
                     hdr.setBackground(_ANGA_COLORS.get(atype, _NOTE_BG))
@@ -1068,7 +1070,18 @@ class TabularEditorDialog(QDialog):
     # Octave markers: '.' (lower) or "'" (upper).  '^' is intentionally excluded
     # (S^ notation is no longer supported). Trailing glide marker '-' is not
     # captured so G3- tokenises as G3 (glide is a visual cue only in MIDI mode).
-    _TOKEN_RE = re.compile(r"([SP][.']?|[RGMDN][1-4]?[.']?)")
+    _TOKEN_RE = re.compile(r"([SP][.']?|[RGMDN][1-4]?[.']?|[,;])")
+
+    @classmethod
+    def _tokenize_note_cell(cls, note_text: str) -> list:
+        return cls._TOKEN_RE.findall(note_text.replace(' ', ''))
+
+    @staticmethod
+    def _token_slot_count(tokens: list) -> int:
+        slots = 0
+        for tok in tokens:
+            slots += 2 if tok == ';' else 1
+        return slots
 
     def _build_scamp_and_timing(self) -> tuple:
         """Build SCAMP note list, timing map, and percussion list from the grid.
@@ -1137,15 +1150,27 @@ class TabularEditorDialog(QDialog):
                     current_time += 2 * akshara_sec
                     continue   # no timing_map entry
 
-                # ── Rest / empty cell ────────────────────────────────────────
-                if not note_text or note_text == '-':
+                # ── Empty cell: continue the previous playable swara ─────────
+                if not note_text:
+                    if scamp_notes and scamp_notes[-1][0] != '$':
+                        scamp_notes[-1][1][2] += akshara_beats
+                        current_time += akshara_sec
+                        continue
+
+                    timing_map.append((current_time, grid_row_idx, col))
+                    scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
+                    current_time += akshara_sec
+                    continue
+
+                # ── Explicit rest cell ───────────────────────────────────────
+                if note_text == '-':
                     timing_map.append((current_time, grid_row_idx, col))
                     scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
                     current_time += akshara_sec
                     continue
 
                 # ── Note cell (single or multi-note) ────────────────────────
-                tokens = self._TOKEN_RE.findall(note_text.replace(' ', ''))
+                tokens = self._tokenize_note_cell(note_text)
                 if not tokens:
                     # Unrecognised content → rest
                     timing_map.append((current_time, grid_row_idx, col))
@@ -1153,11 +1178,26 @@ class TabularEditorDialog(QDialog):
                     current_time += akshara_sec
                     continue
 
-                token_beats = akshara_beats / len(tokens)
+                slot_count = self._token_slot_count(tokens)
+                if slot_count <= 0:
+                    timing_map.append((current_time, grid_row_idx, col))
+                    scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
+                    current_time += akshara_sec
+                    continue
+
+                token_beats = akshara_beats / slot_count
                 # One timing_map entry for the whole cell (start of first sub-note)
                 timing_map.append((current_time, grid_row_idx, col))
 
                 for tok in tokens:
+                    if tok == ',':
+                        if scamp_notes:
+                            scamp_notes[-1][1][2] += token_beats
+                        continue
+                    if tok == ';':
+                        if scamp_notes:
+                            scamp_notes[-1][1][2] += 2 * token_beats
+                        continue
                     try:
                         pitch = cparser._get_microtone_pitch(tok)
                         scamp_notes.append([tok, [inst, pitch, token_beats]])
@@ -1594,4 +1634,3 @@ def show_ui(language: str = 'en',
     window.setWindowFlag(Qt.WindowType.Window, True)
     window.show()
     sys.exit(app.exec())
-

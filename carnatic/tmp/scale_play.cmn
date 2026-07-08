@@ -1,12 +1,12 @@
 {Geetham
-#M15
-{Scale: Malahari
-{ Ragam: Malahari
+#M17
+{Scale: VasanthA
+{ Ragam: VasanthA
 { Talam: Triputa (Chathurasra Jathi)
 #T4
 #J2
 #D60
 {Aarohanam:
-S R1 M1 P | D1 S^ | - - ||
+S M1 G3 M1 | D2 N3 | S^ - ||
 {Avarohanam:
-S^ D1 P M1 | G2 R1 | S - ||
+S^ N3 D2 M1 | G3 R1 | S - ||
