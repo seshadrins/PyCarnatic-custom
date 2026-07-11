@@ -3,6 +3,7 @@ import pygame
 import musicpy as mp
 import os
 import math
+import time
 from midiutil.MidiFile import MIDIFile
 from carnatic import cparser,settings, thaaLa#,midi2audio
 _PYGAME_FINISH_CLOCK_SECONDS = 30
@@ -42,10 +43,12 @@ class MPlayer(sf2.sf2_loader):
         # Step 3 – start playback (non-blocking)
         import sf2_loader as _sf2
         _sf2.play_sound(audio, wait=False)
-        # Wait for playback to finish.  pygame.event.poll() must NOT be called
-        # from a background thread on Windows, so we just sleep.
+        # Wait for playback to finish.  pygame.time.delay() can monopolise the
+        # Python interpreter on Windows and temporarily freeze Qt's UI thread,
+        # even though mixer playback continues.  time.sleep() releases the GIL.
+        # pygame.event.poll() must also not be called from a background thread.
         while mp.pygame.mixer.get_busy():
-            pygame.time.delay(10)
+            time.sleep(0.01)
         print('playing finished')
     def play_audio_file(self,audio_file):
         audio_file = os.path.abspath(audio_file)

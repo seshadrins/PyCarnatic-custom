@@ -8,7 +8,7 @@ import os
 import re
 import time as _time
 import threading
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QEvent
 from PyQt6.QtWidgets import (
     QApplication, QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox,
     QLabel, QLineEdit, QComboBox, QPushButton, QTableWidget,
@@ -287,7 +287,10 @@ class TabularEditorDialog(QDialog):
         self._row_transitions: list = []        # [(start_sec, row)] – one entry per new row
         self._play_start_time: float = 0.0
         self._last_highlighted: tuple = (-1, -1)
-        self._pre_scroll_idx: int = 0           # next _row_transitions index to pre-scroll to
+        self._manual_scroll_until: float = 0.0  # briefly suspend auto-follow after user scrolling
+        self._last_auto_scroll_row: int = -1   # prevent repeated no-op scrollTo calls
+        self._timing_index: int = -1           # incremental playback timing cursor
+        self._row_transition_index: int = -1   # incremental auto-scroll cursor
 
         self.setWindowTitle("Tabular Notation Editor (.ctab)")
         self.setMinimumSize(900, 600)
@@ -340,6 +343,8 @@ class TabularEditorDialog(QDialog):
         self._table.setTabKeyNavigation(False)   # our _CellLineEdit handles Tab
         self._table.setAlternatingRowColors(True)
         self._table.verticalHeader().setDefaultSectionSize(52)
+        self._table.viewport().installEventFilter(self)
+        self._table.verticalScrollBar().installEventFilter(self)
         root.addWidget(self._table)
 
         # Connections
@@ -356,6 +361,27 @@ class TabularEditorDialog(QDialog):
         self._btn_stop.clicked.connect(self._stop)
         self._btn_cmn.clicked.connect(self._open_cmn_editor)
         self._btn_close.clicked.connect(self.close)
+
+    def eventFilter(self, watched, event):
+        """Give manual scrolling a short grace period before playback follows again."""
+        if (hasattr(self, '_table')
+                and watched in (self._table.viewport(),
+                                self._table.verticalScrollBar())):
+            scrolling_keys = {
+                Qt.Key.Key_Up, Qt.Key.Key_Down, Qt.Key.Key_PageUp,
+                Qt.Key.Key_PageDown, Qt.Key.Key_Home, Qt.Key.Key_End,
+            }
+            is_manual_scroll = event.type() in (
+                QEvent.Type.Wheel, QEvent.Type.MouseButtonPress,
+                QEvent.Type.TouchBegin,
+            )
+            if (event.type() == QEvent.Type.KeyPress
+                    and event.key() in scrolling_keys):
+                is_manual_scroll = True
+            if is_manual_scroll:
+                self._manual_scroll_until = _time.monotonic() + 2.0
+                self._last_auto_scroll_row = -1
+        return super().eventFilter(watched, event)
 
     # ── Metadata Panel ─────────────────────────────
     def _create_metadata_panel(self) -> QGroupBox:
@@ -1287,7 +1313,6 @@ class TabularEditorDialog(QDialog):
                 if trow != _last_rt_row:
                     self._row_transitions.append((start, trow))
                     _last_rt_row = trow
-            self._pre_scroll_idx = 0   # reset so row 1 is always scrolled to first
 
             temp_midi = settings._TEMP_PATH + "tabular_play.mid"
             cmidi.write_to_midifile_from_scamp_notes(
@@ -1304,6 +1329,9 @@ class TabularEditorDialog(QDialog):
             # tracking from the moment the first audio sample is emitted.
             self._play_start_time = None
             self._last_highlighted = (-1, -1)
+            self._last_auto_scroll_row = -1
+            self._timing_index = -1
+            self._row_transition_index = -1
             self._highlight_timer.start()
 
             def _bg():
@@ -1311,7 +1339,7 @@ class TabularEditorDialog(QDialog):
                     def _on_audio_start():
                         # Called by MPlayer right before play_sound(); this is
                         # the closest possible point to actual audio emission.
-                        self._play_start_time = _time.time()
+                        self._play_start_time = _time.monotonic()
 
                     self.mplayer.play_midi_file(temp_midi,
                                                 on_audio_start=_on_audio_start)
@@ -1319,7 +1347,8 @@ class TabularEditorDialog(QDialog):
                     print("Playback error:", ex)
                 finally:
                     self.mplayer.is_playing = False
-                    self._btn_play.setEnabled(True)
+                    # The highlight timer performs Qt widget updates on the
+                    # main thread; touching the button from here is unsafe.
 
             threading.Thread(target=_bg, daemon=True).start()
         except Exception as e:
@@ -1359,9 +1388,7 @@ class TabularEditorDialog(QDialog):
         Returns:
             scamp_notes  – list of [note_name, [inst_idx, pitch_float, duration_beats]]
             timing_map   – list of (start_sec, table_row, table_col) for every
-                           cell that starts a note (or is a rest); prolongation
-                           cells (,/;) do NOT add an entry so the previous cell
-                           stays highlighted throughout its extended duration.
+                           visible cell, including rests and continuations.
             perc_list    – one beat entry per akshara, ready to pass as
                            solkattu_list to write_to_midifile_from_scamp_notes.
         """
@@ -1468,12 +1495,17 @@ class TabularEditorDialog(QDialog):
                     akshara_sec -= trans_sec
                     pending_transition = ''
 
+                # Track every visible cell, including continuations and empty
+                # cells.  Otherwise the amber marker appears frozen and rows
+                # containing only continuations never enter the scroll schedule.
+                timing_map.append((current_time, grid_row_idx, col))
+
                 # ── Prolongation: , extends last note by 1 akshara ──────────
                 if note_text == ',':
                     if scamp_notes:
                         scamp_notes[-1][1][2] += akshara_beats
                     current_time += akshara_sec
-                    continue   # no timing_map entry; previous cell stays highlighted
+                    continue
 
                 # ── Prolongation: ; extends last note by 2 aksharas ─────────
                 if note_text == ';':
@@ -1482,7 +1514,7 @@ class TabularEditorDialog(QDialog):
                     # Add a second percussion beat for the extra akshara
                     perc_list.append(['beat', [perc_inst, PERC_PITCH, akshara_beats]])
                     current_time += 2 * akshara_sec
-                    continue   # no timing_map entry
+                    continue
 
                 # ── Empty cell: continue the previous playable swara ─────────
                 if not note_text:
@@ -1491,14 +1523,12 @@ class TabularEditorDialog(QDialog):
                         current_time += akshara_sec
                         continue
 
-                    timing_map.append((current_time, grid_row_idx, col))
                     scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
                     current_time += akshara_sec
                     continue
 
                 # ── Explicit rest cell ───────────────────────────────────────
                 if note_text == '-':
-                    timing_map.append((current_time, grid_row_idx, col))
                     scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
                     current_time += akshara_sec
                     continue
@@ -1507,22 +1537,17 @@ class TabularEditorDialog(QDialog):
                 tokens = self._tokenize_note_cell(note_text)
                 if not tokens:
                     # Unrecognised content → rest
-                    timing_map.append((current_time, grid_row_idx, col))
                     scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
                     current_time += akshara_sec
                     continue
 
                 slot_count = self._token_slot_count(tokens)
                 if slot_count <= 0:
-                    timing_map.append((current_time, grid_row_idx, col))
                     scamp_notes.append(['$', [silent_inst, 60.0, akshara_beats]])
                     current_time += akshara_sec
                     continue
 
                 token_beats = akshara_beats / slot_count
-                # One timing_map entry for the whole cell (start of first sub-note)
-                timing_map.append((current_time, grid_row_idx, col))
-
                 for tok in tokens:
                     if tok == ',':
                         if scamp_notes:
@@ -1558,8 +1583,8 @@ class TabularEditorDialog(QDialog):
         * **Highlighting** (cell colour): plain stylesheet swap — no layout
           work, always fast.
 
-        * **Scrolling**: proactive, using a monotonic index into
-          ``_row_transitions``.  A scroll is issued only when the upcoming row
+        * **Scrolling**: proactive, deriving the target row from elapsed time.
+          A scroll is issued only when the upcoming row
           is **not already visible** in the viewport.  If all rows fit on
           screen no scroll is ever issued.  When a scroll IS needed,
           ``PositionAtTop`` brings the new row to the top so several
@@ -1576,11 +1601,9 @@ class TabularEditorDialog(QDialog):
         if self._play_start_time is None:
             return
 
-        elapsed = _time.time() - self._play_start_time
+        elapsed = _time.monotonic() - self._play_start_time
 
         # ── Pre-scroll: only when the upcoming row is off-screen ─────────────
-        # The monotonic _pre_scroll_idx guarantees we never scroll backward.
-        #
         # We use rowViewportPosition(row) to test visibility, NOT visualRect().
         # visualRect() can return coordinates that still intersect the viewport
         # rect for rows that are just outside the scrollable area, producing
@@ -1591,29 +1614,42 @@ class TabularEditorDialog(QDialog):
         #   ≥ vp_h           → row is below the visible area (needs scroll)
         future = elapsed + self._PRE_SCROLL_SEC
         vp_h   = self._table.viewport().height()
-        while self._pre_scroll_idx < len(self._row_transitions):
-            start, trow = self._row_transitions[self._pre_scroll_idx]
-            if start > future:
-                break   # next transition is more than 500 ms away – wait
-            # This row starts within the lookahead window (or is already active).
-            # Only scroll if the row is genuinely outside the viewport.
-            row_y = self._table.rowViewportPosition(trow)
-            row_h = self._table.rowHeight(trow)
-            off_screen = (row_y < 0) or (row_y + row_h > vp_h)
-            if off_screen:
-                # Scroll so this row appears at the top of the viewport; rows
-                # below it also become visible, avoiding per-line scrolling.
-                idx = self._table.model().index(trow, _HEADER_FIXED_COLS)
-                self._table.scrollTo(idx, self._table.ScrollHint.PositionAtTop)
-            self._pre_scroll_idx += 1
-
-        # ── Highlight: find the most-recent timing entry whose start ≤ elapsed ─
-        active = (-1, -1)
-        for (start, trow, tcol) in self._timing_map:
-            if start <= elapsed:
-                active = (trow, tcol)
-            else:
+        follow_row = -1
+        while (self._row_transition_index + 1
+               < len(self._row_transitions)):
+            next_start, _ = self._row_transitions[
+                self._row_transition_index + 1]
+            if next_start > future:
                 break
+            self._row_transition_index += 1
+        if self._row_transition_index >= 0:
+            follow_row = self._row_transitions[
+                self._row_transition_index][1]
+
+        # Deriving the target from elapsed time on every tick lets automatic
+        # following recover after the user has manually moved the scrollbar.
+        if (follow_row > 0
+                and _time.monotonic() >= self._manual_scroll_until):
+            row_y = self._table.rowViewportPosition(follow_row)
+            row_h = self._table.rowHeight(follow_row)
+            off_screen = (row_y < 0) or (row_y + row_h > vp_h)
+            if off_screen and follow_row != self._last_auto_scroll_row:
+                # Near the final rows Qt may be unable to place a row at the
+                # requested top edge.  Mark the attempt before calling scrollTo
+                # so the 30 ms timer cannot flood the event loop with no-ops.
+                self._last_auto_scroll_row = follow_row
+                idx = self._table.model().index(follow_row, _HEADER_FIXED_COLS)
+                self._table.scrollTo(idx, self._table.ScrollHint.PositionAtTop)
+
+        # ── Highlight: advance the timing cursor to the current cell ─────────
+        active = (-1, -1)
+        while self._timing_index + 1 < len(self._timing_map):
+            if self._timing_map[self._timing_index + 1][0] > elapsed:
+                break
+            self._timing_index += 1
+        if self._timing_index >= 0:
+            _, trow, tcol = self._timing_map[self._timing_index]
+            active = (trow, tcol)
 
         if active != self._last_highlighted:
             if self._last_highlighted != (-1, -1):
