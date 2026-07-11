@@ -33,8 +33,12 @@ _LYRIC_BG = QColor(255, 255, 204)
 _HIGHLIGHT_NOTE_BG  = QColor(255, 215, 0)    # gold for active note
 _HIGHLIGHT_LYRIC_BG = QColor(255, 193, 7)    # amber for active lyric
 _HEADER_FIXED_COLS = 3   # Section | Speed | Bar
-_NOTE_CELL_MAX_CHARS = 15
-_NOTE_CELL_WIDTH = 120
+_DEFAULT_NOTE_CELL_MAX_CHARS = 5
+_TRANSITION_CELL_MAX_CHARS = 5
+_TRANSITION_CELL_WIDTH = 45
+_TRANSITION_BG = QColor(230, 245, 255)
+_HIGHLIGHT_TRANSITION_BG = QColor(255, 230, 128)
+_TRANSITION_AKSHARA_FRACTION = 0.25
 
 # Kattai (Shruti) → MIDI base note for Sa
 _KATTAI_TO_BASE_NOTE = {
@@ -130,7 +134,7 @@ class NoteCell(QWidget):
         """Prevent Qt's focus chain from consuming Tab at the widget level."""
         return False
 
-    def __init__(self, anga_type: str = 'L', parent=None):
+    def __init__(self, anga_type: str = 'L', max_chars: int = 5, parent=None):
         super().__init__(parent)
         self.anga_type = anga_type
         # Navigation context – filled by TabularEditorDialog after insertion
@@ -145,7 +149,7 @@ class NoteCell(QWidget):
         # Note input (top half) – uses navigable line-edit
         self.note_edit = _CellLineEdit('note', self)
         self.note_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.note_edit.setMaxLength(_NOTE_CELL_MAX_CHARS)
+        self.note_edit.setMaxLength(max_chars)
         self.note_edit.setToolTip("Enter note (e.g. S, R, P, D, S', -). "
                                   "Auto-resolves to raaga variant on Tab/Enter.")
         self.note_edit.setStyleSheet(
@@ -161,7 +165,7 @@ class NoteCell(QWidget):
         # Lyric input (bottom half)
         self.lyric_edit = _CellLineEdit('lyric', self)
         self.lyric_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lyric_edit.setMaxLength(20)
+        self.lyric_edit.setMaxLength(max_chars)
         self.lyric_edit.setToolTip("Enter lyric syllable")
         self.lyric_edit.setStyleSheet(
             f"background-color: {_LYRIC_BG.name()}; border: none;")
@@ -201,6 +205,45 @@ class NoteCell(QWidget):
 # ──────────────────────────────────────────────────
 # _SepWidget – thin visual separator between avartam groups
 # ──────────────────────────────────────────────────
+class TransitionCell(QWidget):
+    """Optional crossover swara between two akshara cells."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.table_row: int = -1
+        self.table_col: int = -1
+        self.editor_ref = None
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(1, 1, 1, 1)
+        layout.setSpacing(0)
+
+        self.edit = QLineEdit()
+        self.edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.edit.setMaxLength(_TRANSITION_CELL_MAX_CHARS)
+        self.edit.setToolTip(
+            "Optional transition swara; use , to continue the previous swara")
+        self.edit.setStyleSheet(
+            f"background-color: {_TRANSITION_BG.name()}; border: none;")
+        layout.addWidget(self.edit)
+        self.setStyleSheet("TransitionCell { border: 1px solid #b8d7e8; }")
+        self.edit.editingFinished.connect(self._auto_resolve_transition)
+
+    def _auto_resolve_transition(self):
+        if self.editor_ref:
+            raw = self.edit.text().strip()
+            resolved = self.editor_ref._resolve_note(
+                raw, self.table_row, self.table_col)
+            if resolved != raw:
+                self.edit.setText(resolved)
+
+    def transition(self) -> str:
+        return self.edit.text().strip()
+
+    def set_transition(self, text: str):
+        self.edit.setText(text)
+
+
 class _SepWidget(QWidget):
     """Narrow dark bar that visually separates avartam groups in the grid."""
     def __init__(self, parent=None):
@@ -232,6 +275,8 @@ class TabularEditorDialog(QDialog):
         self._current_raaga_id = None      # int raaga index from raaga module
         self._cmn_editor = None            # reference to CMN TutorUI window
         self._avartams_per_line: int = 1   # how many avartams to show per display row
+        self._show_transitions: bool = False
+        self._max_chars_per_cell: int = _DEFAULT_NOTE_CELL_MAX_CHARS
         self._aksharas_per_avartam: int = 8  # filled by _rebuild_grid
 
         # Playback cell-highlighting support
@@ -273,6 +318,7 @@ class TabularEditorDialog(QDialog):
         self._btn_save = QPushButton("Save")
         self._btn_save_as = QPushButton("Save As…")
         self._btn_import_cmn = QPushButton("Import CMN…")
+        self._btn_import_csv = QPushButton("Import CSV…")
         self._btn_export_csv = QPushButton("Export CSV…")
         self._btn_play = QPushButton("▶ Play")
         self._btn_stop = QPushButton("■ Stop")
@@ -280,7 +326,8 @@ class TabularEditorDialog(QDialog):
         self._btn_close = QPushButton("Close")
         for btn in [self._btn_add, self._btn_del, self._btn_new,
                     self._btn_open, self._btn_save, self._btn_save_as,
-                    self._btn_import_cmn, self._btn_export_csv,
+                    self._btn_import_cmn, self._btn_import_csv,
+                    self._btn_export_csv,
                     self._btn_play, self._btn_stop,
                     self._btn_cmn, self._btn_close]:
             btn_bar.addWidget(btn)
@@ -303,6 +350,7 @@ class TabularEditorDialog(QDialog):
         self._btn_save.clicked.connect(self._save_file)
         self._btn_save_as.clicked.connect(self._save_as_file)
         self._btn_import_cmn.clicked.connect(self._import_cmn_file)
+        self._btn_import_csv.clicked.connect(self._import_csv)
         self._btn_export_csv.clicked.connect(self._export_csv)
         self._btn_play.clicked.connect(self._play)
         self._btn_stop.clicked.connect(self._stop)
@@ -389,6 +437,20 @@ class TabularEditorDialog(QDialog):
         apl_layout.addStretch()
         form.addRow("Avartams/line:", apl_widget)
 
+        self._chk_show_transitions = QCheckBox("Show transition cells")
+        self._chk_show_transitions.setToolTip(
+            "Show the optional transition-swara column after each note cell.")
+        form.addRow("Transitions:", self._chk_show_transitions)
+
+        self._spin_max_chars_per_cell = QSpinBox()
+        self._spin_max_chars_per_cell.setRange(1, 30)
+        self._spin_max_chars_per_cell.setValue(_DEFAULT_NOTE_CELL_MAX_CHARS)
+        self._spin_max_chars_per_cell.setMaximumWidth(60)
+        self._spin_max_chars_per_cell.setToolTip(
+            "Maximum characters allowed in each note cell; the column width "
+            "is adjusted to match.")
+        form.addRow("Max chars/cell:", self._spin_max_chars_per_cell)
+
         # Tempo
         self._meta_tempo = QLineEdit("60")
         self._meta_tempo.setMaximumWidth(60)
@@ -411,6 +473,10 @@ class TabularEditorDialog(QDialog):
         self._btn_play_scale.clicked.connect(self._play_scale)
         self._spin_avartams_per_line.valueChanged.connect(
             self._on_avartams_per_line_changed)
+        self._chk_show_transitions.toggled.connect(
+            self._on_show_transitions_changed)
+        self._spin_max_chars_per_cell.valueChanged.connect(
+            self._on_max_chars_per_cell_changed)
 
         # Pre-populate from _DEFAULT_META – block signals so _rebuild_grid
         # is not triggered before _anga_label and the rest of _setup_ui exist.
@@ -447,6 +513,21 @@ class TabularEditorDialog(QDialog):
         self._spin_avartams_per_line.blockSignals(True)
         self._spin_avartams_per_line.setValue(apl)
         self._spin_avartams_per_line.blockSignals(False)
+        show_value = str(meta.get('ShowTransitions', 'False')).strip().lower()
+        self._show_transitions = show_value in ('1', 'true', 'yes', 'on')
+        self._chk_show_transitions.blockSignals(True)
+        self._chk_show_transitions.setChecked(self._show_transitions)
+        self._chk_show_transitions.blockSignals(False)
+        try:
+            max_chars = int(meta.get(
+                'MaxCharsPerCell', str(_DEFAULT_NOTE_CELL_MAX_CHARS))
+                or str(_DEFAULT_NOTE_CELL_MAX_CHARS))
+        except ValueError:
+            max_chars = _DEFAULT_NOTE_CELL_MAX_CHARS
+        self._max_chars_per_cell = max(1, min(30, max_chars))
+        self._spin_max_chars_per_cell.blockSignals(True)
+        self._spin_max_chars_per_cell.setValue(self._max_chars_per_cell)
+        self._spin_max_chars_per_cell.blockSignals(False)
 
     def _read_metadata_from_panel(self) -> dict:
         return {
@@ -461,12 +542,35 @@ class TabularEditorDialog(QDialog):
             'Language': self._meta_language.currentText(),
             'Description': self._meta_description.text().strip(),
             'AvartamsPerLine': str(self._avartams_per_line),
+            'ShowTransitions': str(self._show_transitions),
+            'MaxCharsPerCell': str(self._max_chars_per_cell),
         }
 
     def _on_avartams_per_line_changed(self, value: int):
         """Called when the Avartams/line spinbox changes. Rebuilds the grid."""
         self._avartams_per_line = max(1, value)
         self._rebuild_grid()
+
+    def _on_show_transitions_changed(self, checked: bool):
+        """Show or hide transition columns while preserving their contents."""
+        self._show_transitions = checked
+        for ci, atype in enumerate(self._col_anga_types):
+            if atype == 'T':
+                self._table.setColumnHidden(_HEADER_FIXED_COLS + ci, not checked)
+
+    def _on_max_chars_per_cell_changed(self, value: int):
+        """Apply the input limit and compact width to current note cells."""
+        self._max_chars_per_cell = max(1, value)
+        width = max(45, self._max_chars_per_cell * 9 + 12)
+        for ci, atype in enumerate(self._col_anga_types):
+            if atype not in ('SEP', 'T'):
+                col = _HEADER_FIXED_COLS + ci
+                self._table.setColumnWidth(col, width)
+                for row in range(1, self._table.rowCount()):
+                    cell = self._table.cellWidget(row, col)
+                    if isinstance(cell, NoteCell):
+                        cell.note_edit.setMaxLength(self._max_chars_per_cell)
+                        cell.lyric_edit.setMaxLength(self._max_chars_per_cell)
 
     # ── Playback Settings Panel ────────────────────
     def _create_playback_panel(self) -> QGroupBox:
@@ -550,6 +654,7 @@ class TabularEditorDialog(QDialog):
         aks = sum(s for _, _, s in self._anga_struct)
         self._aksharas_per_avartam = aks
         n = self._avartams_per_line
+        note_cell_width = max(45, self._max_chars_per_cell * 9 + 12)
 
         # Update anga info label
         parts = [f"{name}({size})" for name, _, size in self._anga_struct]
@@ -560,19 +665,31 @@ class TabularEditorDialog(QDialog):
         # Collect existing grid data before destroying it
         existing = self._collect_grid_rows() if self._table.rowCount() > 1 else []
 
-        # Build _col_anga_types: N groups of anga types, separated by 'SEP'
-        # e.g. for N=2: ['L','L','D','D','L','L','SEP','L','L','D','D','L','L']
-        base_types = []
-        for _, col_lbl, size in self._anga_struct:
-            base_types.extend([col_lbl[0]] * size)
+        # Build columns: each main akshara has a following transition cell.
         self._col_anga_types = []
+        self._col_header_labels = []
+        self._col_group_labels = []
         for av in range(n):
             if av > 0:
                 self._col_anga_types.append('SEP')
-            self._col_anga_types.extend(base_types)
+                self._col_header_labels.append('||')
+                self._col_group_labels.append('')
+            for full, col_lbl, size in self._anga_struct:
+                for i in range(size):
+                    prefix = f"[{av+1}]" if n > 1 else ""
+                    atype = col_lbl[0]
+                    self._col_anga_types.append(atype)
+                    self._col_header_labels.append(f"{prefix}{col_lbl}[{i+1}]")
+                    self._col_group_labels.append(
+                        f"[{av+1}]{full}" if n > 1 and i == 0
+                        else (full if i == 0 else ""))
+                    self._col_anga_types.append('T')
+                    self._col_header_labels.append('T')
+                    self._col_group_labels.append('T')
 
         total_cols = _HEADER_FIXED_COLS + len(self._col_anga_types)
         self._table.setColumnCount(total_cols)
+        base_types = []  # old width/header loops are overridden below
 
         # Build column headers
         headers = ['Section', 'Speed', 'Bar']
@@ -583,6 +700,7 @@ class TabularEditorDialog(QDialog):
                 for i in range(size):
                     prefix = f"[{av+1}]" if n > 1 else ""
                     headers.append(f"{prefix}{col_lbl}[{i+1}]")
+        headers = ['Section', 'Speed', 'Bar'] + self._col_header_labels
         self._table.setHorizontalHeaderLabels(headers)
 
         # Column widths + header colors
@@ -595,14 +713,37 @@ class TabularEditorDialog(QDialog):
                 ci += 1
             for atype in base_types:
                 col = _HEADER_FIXED_COLS + ci
-                self._table.setColumnWidth(col, _NOTE_CELL_WIDTH)
+                self._table.setColumnWidth(col, note_cell_width)
                 hdr = self._table.horizontalHeaderItem(col)
                 if hdr:
                     hdr.setBackground(_ANGA_COLORS.get(atype, _NOTE_BG))
                 ci += 1
 
         # Row 0 – anga header labels (read-only)
+        self._table.clearSpans()
+        self._table.clearSpans()
+        for ci, atype in enumerate(self._col_anga_types):
+            col = _HEADER_FIXED_COLS + ci
+            if atype == 'SEP':
+                self._table.setColumnWidth(col, 6)
+            elif atype == 'T':
+                self._table.setColumnWidth(col, _TRANSITION_CELL_WIDTH)
+                hdr = self._table.horizontalHeaderItem(col)
+                if hdr:
+                    hdr.setBackground(_TRANSITION_BG)
+            else:
+                self._table.setColumnWidth(col, note_cell_width)
+                hdr = self._table.horizontalHeaderItem(col)
+                if hdr:
+                    hdr.setBackground(_ANGA_COLORS.get(atype, _NOTE_BG))
+
+        for ci, atype in enumerate(self._col_anga_types):
+            self._table.setColumnHidden(
+                _HEADER_FIXED_COLS + ci,
+                atype == 'T' and not self._show_transitions)
+
         self._table.setRowCount(1)
+        self._table.clearSpans()
         self._table.setRowHeight(0, 22)
         for c in range(_HEADER_FIXED_COLS):
             item = QTableWidgetItem(['Section', 'Speed', 'Bar'][c])
@@ -634,6 +775,24 @@ class TabularEditorDialog(QDialog):
                     col_start += 1
                 if size > 1:
                     self._table.setSpan(0, col_start - size, 1, size)
+
+        self._table.clearSpans()
+        for ci, atype in enumerate(self._col_anga_types):
+            col = _HEADER_FIXED_COLS + ci
+            if atype == 'SEP':
+                item = QTableWidgetItem('')
+                item.setBackground(QColor(90, 90, 90))
+            else:
+                item = QTableWidgetItem(self._col_group_labels[ci])
+                item.setBackground(
+                    _TRANSITION_BG if atype == 'T'
+                    else _ANGA_COLORS.get(atype, _NOTE_BG))
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled)
+            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            bold_font = QFont()
+            bold_font.setBold(True)
+            item.setFont(bold_font)
+            self._table.setItem(0, col, item)
 
         # Re-populate existing display rows
         for row_data in existing:
@@ -668,8 +827,14 @@ class TabularEditorDialog(QDialog):
             col = _HEADER_FIXED_COLS + ci
             if atype == 'SEP':
                 self._table.setCellWidget(r, col, _SepWidget())
+            elif atype == 'T':
+                cell = TransitionCell()
+                cell.editor_ref = self
+                cell.table_row = r
+                cell.table_col = col
+                self._table.setCellWidget(r, col, cell)
             else:
-                cell = NoteCell(atype)
+                cell = NoteCell(atype, self._max_chars_per_cell)
                 cell.editor_ref = self
                 cell.table_row = r
                 cell.table_col = col
@@ -684,14 +849,14 @@ class TabularEditorDialog(QDialog):
                     continue
                 col = _HEADER_FIXED_COLS + ci
                 cell = self._table.cellWidget(r, col)
-                if isinstance(cell, NoteCell):
+                if isinstance(cell, (NoteCell, TransitionCell)):
                     cell.table_row = r
                     cell.table_col = col
 
     def _insert_row_from_data(self, note_lyric_pair: dict):
-        """Insert a display row from {'section','speed','bar','notes','lyrics'}.
+        """Insert a display row from notes, transitions, and lyrics.
 
-        'notes' and 'lyrics' are flat lists with all N avartams' data
+        The flat lists hold all N avartams' data
         concatenated (SEP columns are not counted).
         """
         r = self._table.rowCount()
@@ -702,14 +867,26 @@ class TabularEditorDialog(QDialog):
                                note_lyric_pair.get('speed', '1'),
                                note_lyric_pair.get('bar', ''))
         notes = note_lyric_pair.get('notes', [])
+        transitions = note_lyric_pair.get('transitions', [])
         lyrics = note_lyric_pair.get('lyrics', [])
-        data_ci = 0   # index into notes/lyrics, skipping SEP slots
+        data_ci = 0   # index into notes/transitions/lyrics, skipping SEP slots
+        trans_ci = 0
         for ci, atype in enumerate(self._col_anga_types):
             col = _HEADER_FIXED_COLS + ci
             if atype == 'SEP':
                 self._table.setCellWidget(r, col, _SepWidget())
                 continue
-            cell = NoteCell(atype)
+            if atype == 'T':
+                cell = TransitionCell()
+                cell.editor_ref = self
+                cell.table_row = r
+                cell.table_col = col
+                if trans_ci < len(transitions):
+                    cell.set_transition(transitions[trans_ci])
+                self._table.setCellWidget(r, col, cell)
+                trans_ci += 1
+                continue
+            cell = NoteCell(atype, self._max_chars_per_cell)
             cell.editor_ref = self
             cell.table_row = r
             cell.table_col = col
@@ -751,7 +928,7 @@ class TabularEditorDialog(QDialog):
 
     # ── Collect Data from Grid ─────────────────────
     def _collect_grid_rows(self) -> list:
-        """Return one dict per display row.  'notes' and 'lyrics' are flat
+        """Return one dict per display row. Notes, transitions, and lyrics are flat
         lists with all N avartams concatenated; SEP columns are skipped."""
         result = []
         for r in range(1, self._table.rowCount()):
@@ -761,7 +938,7 @@ class TabularEditorDialog(QDialog):
             section = sec_w.currentText() if sec_w else ''
             speed = spd_w.currentText() if spd_w else '1'
             bar = bar_i.text() if bar_i else str(r)
-            notes, lyrics = [], []
+            notes, transitions, lyrics = [], [], []
             for ci, atype in enumerate(self._col_anga_types):
                 if atype == 'SEP':
                     continue
@@ -769,11 +946,14 @@ class TabularEditorDialog(QDialog):
                 if isinstance(cell, NoteCell):
                     notes.append(cell.note())
                     lyrics.append(cell.lyric())
+                elif isinstance(cell, TransitionCell):
+                    transitions.append(cell.transition())
                 else:
                     notes.append('')
                     lyrics.append('')
             result.append({'section': section, 'speed': speed,
-                           'bar': bar, 'notes': notes, 'lyrics': lyrics})
+                           'bar': bar, 'notes': notes,
+                           'transitions': transitions, 'lyrics': lyrics})
         return result
 
     def _collect_data(self) -> dict:
@@ -789,10 +969,13 @@ class TabularEditorDialog(QDialog):
         global_bar = 1   # ever-increasing; never clashes between display rows
         for rd in self._collect_grid_rows():
             notes_flat = rd['notes']    # length = n * aks
+            transitions_flat = rd.get('transitions', [])
             lyrics_flat = rd['lyrics']
             for i in range(n):
                 chunk_notes  = (notes_flat[i*aks:(i+1)*aks]
                                 + [''] * aks)[:aks]
+                chunk_transitions = (transitions_flat[i*aks:(i+1)*aks]
+                                     + [''] * aks)[:aks]
                 chunk_lyrics = (lyrics_flat[i*aks:(i+1)*aks]
                                 + [''] * aks)[:aks]
                 bar = str(global_bar)
@@ -801,6 +984,12 @@ class TabularEditorDialog(QDialog):
                     'section': rd['section'], 'speed': rd['speed'],
                     'bar': bar, 'row_type': 'N', 'aksharas': chunk_notes,
                 })
+                if any(tr.strip() for tr in chunk_transitions):
+                    data['rows'].append({
+                        'section': rd['section'], 'speed': rd['speed'],
+                        'bar': bar, 'row_type': 'T',
+                        'aksharas': chunk_transitions,
+                    })
                 if any(lyr.strip() for lyr in chunk_lyrics):
                     data['rows'].append({
                         'section': rd['section'], 'speed': rd['speed'],
@@ -823,15 +1012,18 @@ class TabularEditorDialog(QDialog):
         self._populate_metadata_panel(data['meta'])   # also sets _avartams_per_line + spinbox
         self._rebuild_grid()
 
-        # Pair note and lyric rows by (section, speed, bar) key
-        note_map, lyric_map, order = {}, {}, []
+        # Pair note, transition, and lyric rows by (section, speed, bar) key
+        note_map, transition_map, lyric_map, order = {}, {}, {}, []
         for row in data['rows']:
             key = (row.get('section', ''), row.get('speed', '1'),
                    row.get('bar', '1'))
-            if row.get('row_type', 'N') == 'N':
+            row_type = row.get('row_type', 'N')
+            if row_type == 'N':
                 note_map[key] = row.get('aksharas', [])
                 if key not in order:
                     order.append(key)
+            elif row_type == 'T':
+                transition_map[key] = row.get('aksharas', [])
             else:
                 lyric_map[key] = row.get('aksharas', [])
 
@@ -840,14 +1032,16 @@ class TabularEditorDialog(QDialog):
         i = 0
         while i < len(order):
             group = order[i:i + n]
-            combined_notes, combined_lyrics = [], []
+            combined_notes, combined_transitions, combined_lyrics = [], [], []
             for key in group:
                 combined_notes.extend(note_map.get(key, []))
+                combined_transitions.extend(transition_map.get(key, []))
                 combined_lyrics.extend(lyric_map.get(key, []))
             sec, spd, bar = group[0]
             self._insert_row_from_data({
                 'section': sec, 'speed': spd, 'bar': bar,
-                'notes': combined_notes, 'lyrics': combined_lyrics,
+                'notes': combined_notes, 'transitions': combined_transitions,
+                'lyrics': combined_lyrics,
             })
             i += n
 
@@ -943,11 +1137,84 @@ class TabularEditorDialog(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "Import Error", str(e))
 
+    def _import_csv(self):
+        """Import a CSV exported by this editor.
+
+        CSV carries grid contents, not full composition metadata. The current
+        metadata panel provides thaalam, jaathi, raaga, tempo, and other fields.
+        """
+        import csv as _csv
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Import CSV",
+            settings._LESSONS_PATH,
+            "CSV Files (*.csv);;All Files (*)")
+        if not path:
+            return
+        try:
+            with open(path, 'r', newline='', encoding='utf-8-sig') as f:
+                rows_in = list(_csv.DictReader(f))
+            if not rows_in:
+                QMessageBox.warning(self, "Import CSV", "No data rows found.")
+                return
+
+            fieldnames = rows_in[0].keys()
+            av_nums = []
+            for name in fieldnames:
+                m = re.match(r"Av(\d+)_[NTL](\d+)$", name or "")
+                if m:
+                    av_nums.append(int(m.group(1)))
+            n = max(av_nums) if av_nums else self._avartams_per_line
+            n = max(1, n)
+
+            ti, ji = self._current_thaala_jaathi()
+            aks = ctab_parser.get_total_aksharas(ti, ji)
+            meta = self._read_metadata_from_panel()
+            meta['AvartamsPerLine'] = str(n)
+            data = {'meta': meta, 'rows': []}
+
+            global_bar = 1
+            for csv_row in rows_in:
+                section = (csv_row.get('Section') or '').strip()
+                speed = (csv_row.get('Speed') or '1').strip()
+                for av in range(1, n + 1):
+                    notes, transitions, lyrics = [], [], []
+                    for i in range(1, aks + 1):
+                        notes.append((csv_row.get(f"Av{av}_N{i}") or '').strip())
+                        transitions.append((csv_row.get(f"Av{av}_T{i}") or '').strip())
+                        lyrics.append((csv_row.get(f"Av{av}_L{i}") or '').strip())
+
+                    bar = str(global_bar)
+                    global_bar += 1
+                    data['rows'].append({
+                        'section': section, 'speed': speed, 'bar': bar,
+                        'row_type': 'N', 'aksharas': notes,
+                    })
+                    if any(t.strip() for t in transitions):
+                        data['rows'].append({
+                            'section': section, 'speed': speed, 'bar': bar,
+                            'row_type': 'T', 'aksharas': transitions,
+                        })
+                    if any(l.strip() for l in lyrics):
+                        data['rows'].append({
+                            'section': section, 'speed': speed, 'bar': bar,
+                            'row_type': 'L', 'aksharas': lyrics,
+                        })
+
+            self._filepath = ""
+            self._table.setRowCount(0)
+            self._populate_grid_from_data(data)
+            self.setWindowTitle(
+                f"Tabular Notation Editor - {os.path.basename(path)} [imported]")
+            QMessageBox.information(self, "Import Complete",
+                                    f"Imported CSV:\n{path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Import CSV Error", str(e))
+
     def _export_csv(self):
         """Export the current grid to a CSV file.
 
         Layout: one spreadsheet row per *display* row (i.e. per N-avartam group).
-        Note and lyric data appear in adjacent columns, one column per akshara.
+        Note, transition, and lyric data appear in adjacent columns per akshara.
         Separator columns are omitted; avartam groups are separated by an empty column.
         """
         import csv as _csv
@@ -970,10 +1237,12 @@ class TabularEditorDialog(QDialog):
                     header.append('')   # avartam separator
                 for i in range(aks):
                     header.append(f"Av{av+1}_N{i+1}")   # note
+                    header.append(f"Av{av+1}_T{i+1}")   # transition
                     header.append(f"Av{av+1}_L{i+1}")   # lyric
             rows_out = [header]
             for rd in self._collect_grid_rows():
-                notes  = rd['notes']
+                notes = rd['notes']
+                transitions = rd.get('transitions', [])
                 lyrics = rd['lyrics']
                 row_out = [rd['section'], rd['speed'], rd['bar']]
                 for av in range(n):
@@ -982,6 +1251,7 @@ class TabularEditorDialog(QDialog):
                     for i in range(aks):
                         idx = av * aks + i
                         row_out.append(notes[idx]  if idx < len(notes)  else '')
+                        row_out.append(transitions[idx] if idx < len(transitions) else '')
                         row_out.append(lyrics[idx] if idx < len(lyrics) else '')
                 rows_out.append(row_out)
 
@@ -1115,24 +1385,88 @@ class TabularEditorDialog(QDialog):
                         if selected_rows
                         else list(range(1, self._table.rowCount())))
 
+        def _append_segment(note_text: str, duration_beats: float,
+                            duration_sec: float):
+            nonlocal current_time
+            note_text = (note_text or '').strip()
+            if duration_beats <= 0:
+                return
+            if note_text in ('', '-'):
+                scamp_notes.append(['$', [silent_inst, 60.0, duration_beats]])
+                current_time += duration_sec
+                return
+            if note_text == ',':
+                if scamp_notes:
+                    scamp_notes[-1][1][2] += duration_beats
+                current_time += duration_sec
+                return
+            if note_text == ';':
+                if scamp_notes:
+                    scamp_notes[-1][1][2] += duration_beats
+                current_time += duration_sec
+                return
+
+            tokens = self._tokenize_note_cell(note_text)
+            slot_count = self._token_slot_count(tokens)
+            if not tokens or slot_count <= 0:
+                scamp_notes.append(['$', [silent_inst, 60.0, duration_beats]])
+                current_time += duration_sec
+                return
+
+            token_beats = duration_beats / slot_count
+            for tok in tokens:
+                if tok == ',':
+                    if scamp_notes:
+                        scamp_notes[-1][1][2] += token_beats
+                    continue
+                if tok == ';':
+                    if scamp_notes:
+                        scamp_notes[-1][1][2] += 2 * token_beats
+                    continue
+                try:
+                    pitch = cparser._get_microtone_pitch(tok)
+                    scamp_notes.append([tok, [inst, pitch, token_beats]])
+                except Exception:
+                    scamp_notes.append(['$', [silent_inst, 60.0, token_beats]])
+            current_time += duration_sec
+
+        pending_transition = ''
         for grid_row_idx in rows_to_play:
             spd_w = self._table.cellWidget(grid_row_idx, 1)
             try:
                 speed = int(spd_w.currentText()) if spd_w else 1
             except (ValueError, AttributeError):
                 speed = 1
-            akshara_beats = full_dur / (2 ** (speed - 1))
-            akshara_sec   = akshara_beats * (60.0 / tempo)
+            base_akshara_beats = full_dur / (2 ** (speed - 1))
+            base_akshara_sec = base_akshara_beats * (60.0 / tempo)
 
             for ci, atype in enumerate(self._col_anga_types):
                 if atype == 'SEP':
                     continue   # skip separator columns entirely
                 col       = _HEADER_FIXED_COLS + ci
                 cell      = self._table.cellWidget(grid_row_idx, col)
+                if atype == 'T':
+                    pending_transition = (
+                        cell.transition().strip()
+                        if isinstance(cell, TransitionCell) else '')
+                    continue
+
+                akshara_beats = base_akshara_beats
+                akshara_sec = base_akshara_sec
                 note_text = cell.note().strip() if isinstance(cell, NoteCell) else ''
 
                 # One percussion beat per akshara (regardless of note content)
-                perc_list.append(['beat', [perc_inst, PERC_PITCH, akshara_beats]])
+                perc_list.append(['beat', [perc_inst, PERC_PITCH, base_akshara_beats]])
+
+                if pending_transition:
+                    trans_beats = min(
+                        base_akshara_beats * _TRANSITION_AKSHARA_FRACTION,
+                        akshara_beats)
+                    trans_sec = trans_beats * (60.0 / tempo)
+                    _append_segment(pending_transition, trans_beats, trans_sec)
+                    akshara_beats -= trans_beats
+                    akshara_sec -= trans_sec
+                    pending_transition = ''
 
                 # ── Prolongation: , extends last note by 1 akshara ──────────
                 if note_text == ',':
@@ -1487,6 +1821,11 @@ class TabularEditorDialog(QDialog):
             cell = self._table.cellWidget(scan_row, scan_col)
             if isinstance(cell, NoteCell):
                 note = cell.note().strip()
+            elif isinstance(cell, TransitionCell):
+                note = cell.transition().strip()
+            else:
+                note = ''
+            if note:
                 if note and note not in (',', ';', '-'):
                     for ch in note:
                         if ch.upper() in self._SWARA_ORDER:

@@ -44,6 +44,7 @@ _DEFAULT_META = {
     'Thaalam': 'THRIPUTAI', 'Jaathi': 'CHATHUSRA',
     'Tempo': '60', 'Composer': '', 'Language': 'Sanskrit', 'Description': '',
     'AvartamsPerLine': '1',
+    'ShowTransitions': 'False', 'MaxCharsPerCell': '5',
 }
 
 
@@ -202,11 +203,12 @@ def convert_to_cmn(data: dict) -> str:
     note_rows, lyric_rows, order = {}, {}, []
     for row in data['rows']:
         key = (row.get('section', ''), row.get('speed', '1'), row.get('bar', '1'))
-        if row.get('row_type', 'N') == 'N':
+        row_type = row.get('row_type', 'N')
+        if row_type == 'N':
             note_rows[key] = row
             if key not in order:
                 order.append(key)
-        else:
+        elif row_type == 'L':
             lyric_rows[key] = row
 
     def _build_avartam(aksharas):
