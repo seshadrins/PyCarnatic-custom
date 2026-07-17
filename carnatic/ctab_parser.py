@@ -44,7 +44,7 @@ _DEFAULT_META = {
     'Thaalam': 'THRIPUTAI', 'Jaathi': 'CHATHUSRA',
     'Tempo': '60', 'Composer': '', 'Language': 'Sanskrit', 'Description': '',
     'AvartamsPerLine': '1',
-    'ShowTransitions': 'False', 'MaxCharsPerCell': '5',
+    'ShowTransitions': 'False', 'MaxCharsPerCell': '8',
 }
 
 

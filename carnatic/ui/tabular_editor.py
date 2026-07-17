@@ -33,7 +33,10 @@ _LYRIC_BG = QColor(255, 255, 204)
 _HIGHLIGHT_NOTE_BG  = QColor(255, 215, 0)    # gold for active note
 _HIGHLIGHT_LYRIC_BG = QColor(255, 193, 7)    # amber for active lyric
 _HEADER_FIXED_COLS = 3   # Section | Speed | Bar
-_DEFAULT_NOTE_CELL_MAX_CHARS = 5
+# Six characters are required for common tied four-slot patterns such as
+# `,G3M1,`.  Keep a little extra room so the trailing continuation marker is
+# never silently discarded while the user is typing.
+_DEFAULT_NOTE_CELL_MAX_CHARS = 8
 _TRANSITION_CELL_MAX_CHARS = 5
 _TRANSITION_CELL_WIDTH = 45
 _TRANSITION_BG = QColor(230, 245, 255)
@@ -1012,7 +1015,11 @@ class TabularEditorDialog(QDialog):
                     'section': rd['section'], 'speed': rd['speed'],
                     'bar': bar, 'row_type': 'N', 'aksharas': chunk_notes,
                 })
-                if any(tr.strip() for tr in chunk_transitions):
+                # Hidden transitions mean "no transitions" for the persisted
+                # score.  Do not retain stale T rows merely because their
+                # editor widgets still contain values from an earlier state.
+                if (self._show_transitions
+                        and any(tr.strip() for tr in chunk_transitions)):
                     data['rows'].append({
                         'section': rd['section'], 'speed': rd['speed'],
                         'bar': bar, 'row_type': 'T',
