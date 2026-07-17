@@ -550,8 +550,10 @@ class TabularEditorDialog(QDialog):
                 or str(_DEFAULT_NOTE_CELL_MAX_CHARS))
         except ValueError:
             max_chars = _DEFAULT_NOTE_CELL_MAX_CHARS
-        self._max_chars_per_cell = max(1, min(30, max_chars))
+        self._max_chars_per_cell = max(1, max_chars)
         self._spin_max_chars_per_cell.blockSignals(True)
+        self._spin_max_chars_per_cell.setMaximum(
+            max(30, self._max_chars_per_cell))
         self._spin_max_chars_per_cell.setValue(self._max_chars_per_cell)
         self._spin_max_chars_per_cell.blockSignals(False)
 
@@ -1029,6 +1031,37 @@ class TabularEditorDialog(QDialog):
         The CTAB file stores one avartam per row.  When AvartamsPerLine > 1
         consecutive rows are grouped into a single display row.
         """
+        # QLineEdit truncates text immediately when setText() exceeds its
+        # maxLength.  Determine the required size before creating any cells so
+        # opening/importing a composition can never discard note or lyric text.
+        longest_loaded_cell = max(
+            (len(str(value))
+             for row in data.get('rows', [])
+             if row.get('row_type', 'N') in ('N', 'L')
+             for value in row.get('aksharas', [])),
+            default=0,
+        )
+        try:
+            configured_max = int(data.get('meta', {}).get(
+                'MaxCharsPerCell', str(_DEFAULT_NOTE_CELL_MAX_CHARS))
+                or str(_DEFAULT_NOTE_CELL_MAX_CHARS))
+        except ValueError:
+            configured_max = _DEFAULT_NOTE_CELL_MAX_CHARS
+        required_max = max(
+            _DEFAULT_NOTE_CELL_MAX_CHARS, configured_max, longest_loaded_cell)
+        data.setdefault('meta', {})['MaxCharsPerCell'] = str(required_max)
+
+        # Transition rows are the source of truth.  Older CTAB files predate
+        # the ShowTransitions metadata option, so automatically reveal the
+        # transition columns whenever at least one saved transition is present.
+        has_saved_transitions = any(
+            row.get('row_type', 'N') == 'T'
+            and any(str(value).strip()
+                    for value in row.get('aksharas', []))
+            for row in data.get('rows', []))
+        if has_saved_transitions:
+            data['meta']['ShowTransitions'] = 'True'
+
         # Read AvartamsPerLine from metadata BEFORE _rebuild_grid
         try:
             apl = max(1, int(data['meta'].get('AvartamsPerLine', '1') or '1'))
