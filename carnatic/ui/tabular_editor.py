@@ -294,6 +294,7 @@ class TabularEditorDialog(QDialog):
         self._last_auto_scroll_row: int = -1   # prevent repeated no-op scrollTo calls
         self._timing_index: int = -1           # incremental playback timing cursor
         self._row_transition_index: int = -1   # incremental auto-scroll cursor
+        self._scamp_is_playing: bool = False
 
         self.setWindowTitle("Tabular Notation Editor (.ctab)")
         self.setMinimumSize(900, 600)
@@ -1331,7 +1332,8 @@ class TabularEditorDialog(QDialog):
 
     # ── Playback ───────────────────────────────────
     def _play(self):
-        if not self.mplayer:
+        if (not self.mplayer
+                and self.player_type != settings.PLAYER_TYPE.SCAMP):
             QMessageBox.warning(self, "No Player",
                                 "No MPlayer instance available.")
             return
@@ -1343,6 +1345,9 @@ class TabularEditorDialog(QDialog):
                 settings.TEMPO = 60.0
 
             scamp_notes, self._timing_map, perc_list = self._build_scamp_and_timing()
+            has_gamaka = any('~' in str(note) for note, _ in scamp_notes)
+            use_scamp = (has_gamaka
+                         or self.player_type == settings.PLAYER_TYPE.SCAMP)
 
             # Build row-transition schedule: one entry each time the active
             # row changes.  Used by _update_highlight to pre-scroll the next
@@ -1355,12 +1360,15 @@ class TabularEditorDialog(QDialog):
                     _last_rt_row = trow
 
             temp_midi = settings._TEMP_PATH + "tabular_play.mid"
-            cmidi.write_to_midifile_from_scamp_notes(
-                scamp_notes, temp_midi,
-                include_percussion_layer=self.include_percussion,
-                solkattu_list=perc_list if self.include_percussion else None)
+            if not use_scamp:
+                cmidi.write_to_midifile_from_scamp_notes(
+                    scamp_notes, temp_midi,
+                    include_percussion_layer=self.include_percussion,
+                    solkattu_list=perc_list if self.include_percussion else None)
 
-            self.mplayer.is_playing = True
+            if self.mplayer:
+                self.mplayer.is_playing = True
+            self._scamp_is_playing = use_scamp
             self._btn_play.setEnabled(False)
             # _play_start_time stays None until the on_audio_start callback
             # fires inside MPlayer.play_midi_file – right between synthesis and
@@ -1376,6 +1384,29 @@ class TabularEditorDialog(QDialog):
 
             def _bg():
                 try:
+                    if use_scamp:
+                        # MIDI/SF2 cannot render SCAMP pitch envelopes.  Use
+                        # SCAMP automatically for a tabular score containing a
+                        # kampitam marker, even when MIDI is the normal player.
+                        from carnatic import cplayer
+                        self._play_start_time = _time.monotonic()
+                        # The normal MIDI player stores velocity as 0..127;
+                        # SCAMP expects amplitude as 0.0..1.0.
+                        old_volumes = list(settings._INSTRUMENT_VOLUME_LEVELS)
+                        try:
+                            settings._INSTRUMENT_VOLUME_LEVELS[:] = [
+                                min(1.0, float(v) / settings._VOLUME_MAX)
+                                if float(v) > 1.0 else float(v)
+                                for v in old_volumes]
+                            cplayer.play_notes(
+                                scamp_notes,
+                                include_percussion_layer=self.include_percussion,
+                                solkattu_list=(perc_list
+                                               if self.include_percussion else None))
+                        finally:
+                            settings._INSTRUMENT_VOLUME_LEVELS[:] = old_volumes
+                        return
+
                     def _on_audio_start():
                         # Called by MPlayer right before play_sound(); this is
                         # the closest possible point to actual audio emission.
@@ -1386,7 +1417,9 @@ class TabularEditorDialog(QDialog):
                 except Exception as ex:
                     print("Playback error:", ex)
                 finally:
-                    self.mplayer.is_playing = False
+                    self._scamp_is_playing = False
+                    if self.mplayer:
+                        self.mplayer.is_playing = False
                     # The highlight timer performs Qt widget updates on the
                     # main thread; touching the button from here is unsafe.
 
@@ -1406,10 +1439,13 @@ class TabularEditorDialog(QDialog):
     # Tokeniser: extracts individual swara tokens from a cell's note text.
     # Supports concatenated or space-separated tokens, e.g. "D2G3'" or "D2 G3'".
     # Handles uppercase notes only (S/P without digit; R/G/M/D/N with optional digit 1-4).
+    # A trailing ~ (optionally followed by a 1-4 neighbour distance) requests
+    # kampitam, e.g. D2~ or D2~2.
     # Octave markers: '.' (lower) or "'" (upper).  '^' is intentionally excluded
     # (S^ notation is no longer supported). Trailing glide marker '-' is not
     # captured so G3- tokenises as G3 (glide is a visual cue only in MIDI mode).
-    _TOKEN_RE = re.compile(r"([SP][.']?|[RGMDN][1-4]?[.']?|[,;])")
+    _TOKEN_RE = re.compile(
+        r"([SP][.']?(?:~[1-4]?)?|[RGMDN][1-4]?[.']?(?:~[1-4]?)?|[,;])")
 
     @classmethod
     def _tokenize_note_cell(cls, note_text: str) -> list:
@@ -1444,6 +1480,21 @@ class TabularEditorDialog(QDialog):
         timing_map:  list = []
         perc_list:   list = []
         current_time = 0.0   # seconds (for timing_map)
+
+        # Gamaka neighbour lookup must follow the rāga selected in this editor,
+        # not whichever rāga happened to be used elsewhere in the application.
+        if self._current_raaga_id is not None:
+            raaga_module.set_default_raaga_id(self._current_raaga_id)
+
+        def _pitch_for_token(token: str):
+            """Return a fixed pitch or a SCAMP kampitam Envelope."""
+            if '~' not in token:
+                return cparser._get_microtone_pitch(token)
+            note, marker = token.split('~', 1)
+            neighbour_distance = int(marker) if marker else 1
+            pitch = cparser._kampitam(note, neighbour_distance)
+            return (pitch if pitch is not None
+                    else cparser._get_microtone_pitch(note))
 
         # Play only selected rows (if any), else play all data rows.
         selected_rows = {
@@ -1491,7 +1542,7 @@ class TabularEditorDialog(QDialog):
                         scamp_notes[-1][1][2] += 2 * token_beats
                     continue
                 try:
-                    pitch = cparser._get_microtone_pitch(tok)
+                    pitch = _pitch_for_token(tok)
                     scamp_notes.append([tok, [inst, pitch, token_beats]])
                 except Exception:
                     scamp_notes.append(['$', [silent_inst, 60.0, token_beats]])
@@ -1598,7 +1649,7 @@ class TabularEditorDialog(QDialog):
                             scamp_notes[-1][1][2] += 2 * token_beats
                         continue
                     try:
-                        pitch = cparser._get_microtone_pitch(tok)
+                        pitch = _pitch_for_token(tok)
                         scamp_notes.append([tok, [inst, pitch, token_beats]])
                     except Exception:
                         # Unrecognised note → silence placeholder
@@ -1631,7 +1682,9 @@ class TabularEditorDialog(QDialog):
           subsequent rows also become visible, avoiding repeated per-line
           scrolls for the rows that follow.
         """
-        if not self.mplayer or not self.mplayer.is_playing:
+        is_playing = (self._scamp_is_playing
+                      or (self.mplayer and self.mplayer.is_playing))
+        if not is_playing:
             self._highlight_timer.stop()
             self._clear_all_highlights()
             self._btn_play.setEnabled(True)
