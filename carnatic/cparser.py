@@ -36,10 +36,25 @@ glide_next_note = False
 def _parse_commands(cmd_key, cmd_value):
     #print('cmd_key',cmd_key, 'cmd_value',cmd_value)
     previous_nadai_index = settings.NADAI_INDEX
-    if cmd_value =="" or not cmd_value.isdigit():
+    cmd_value = cmd_value.strip()
+    if cmd_value == "":
         raise ValueError("Command argument for",cmd_key,"should be a number")
     cmd_key = cmd_key.upper()
-    cmd_value = int(cmd_value.strip())
+    if cmd_key == "S":
+        try:
+            cmd_value = float(cmd_value)
+        except ValueError:
+            raise ValueError(
+                "Speed command argument should be a number") from None
+        if cmd_value <= 0 or cmd_value > settings.PLAY_SPEED_MAX:
+            raise ValueError(
+                "Speed should be greater than 0 and no more than",
+                settings.PLAY_SPEED_MAX)
+    else:
+        if not cmd_value.isdigit():
+            raise ValueError(
+                "Command argument for",cmd_key,"should be a whole number")
+        cmd_value = int(cmd_value)
     if cmd_key == "D":
         settings.TEMPO = cmd_value
     elif cmd_key == "I":

@@ -1948,9 +1948,9 @@ class TabularEditorDialog(QDialog):
         for grid_row_idx in rows_to_play:
             spd_w = self._table.cellWidget(grid_row_idx, 1)
             try:
-                speed = int(spd_w.currentText()) if spd_w else 1
+                speed = float(spd_w.currentText()) if spd_w else 1.0
             except (ValueError, AttributeError):
-                speed = 1
+                speed = 1.0
             base_akshara_beats = full_dur / (2 ** (speed - 1))
             base_akshara_sec = base_akshara_beats * (60.0 / tempo)
 

@@ -33,7 +33,7 @@ _ANUDRUTAM_AKSHARAS = 1
 SECTION_NAMES = ['Pallavi', 'Anupallavi', 'Muktayi Swaram',
                  'Charanam 1', 'Charanam 2', 'Charanam 3', 'Charanam 4',
                  'Ettugada Swaram', 'Other']
-SPEED_NAMES = ['1', '2', '3']
+SPEED_NAMES = ['0.5', '1', '1.5', '2', '2.5', '3']
 COMPOSITION_TYPES = ['Geetham', 'Varnam', 'Kriti', 'Swarajaathi',
                      'Thillana', 'Ashtapadi', 'Other']
 LANGUAGES = ['Sanskrit', 'Tamil', 'Telugu', 'Kannada',
@@ -234,9 +234,15 @@ def convert_to_cmn(data: dict) -> str:
         if section != prev_section:
             lines.append(f"{{ {section}:")
             prev_section = section
-        speed_val = int(speed) if speed.isdigit() else 1
+        try:
+            speed_val = float(speed)
+        except (TypeError, ValueError):
+            speed_val = 1.0
+        speed_text = (
+            str(int(speed_val)) if speed_val.is_integer()
+            else str(speed_val))
         if speed_val != prev_speed:
-            lines.append(f"#S{speed_val}")
+            lines.append(f"#S{speed_text}")
             prev_speed = speed_val
 
         # Build note line: avartam1 || avartam2 || ...
@@ -264,7 +270,7 @@ def convert_to_cmn(data: dict) -> str:
 # ── CMN → CTAB converter ──────────────────────────────────────────────────────
 
 # Matches a CMN command line: #T4, #J2, #M15, #S1, #D60 …
-_CMD_RE = _re.compile(r'^\s*#([DIJMNPST])(\d+)')
+_CMD_RE = _re.compile(r'^\s*#([DIJMNPST])(\d+(?:\.\d+)?)')
 
 # Regex to resolve a single generic swara token: bare note letter + optional octave marker
 # Matches tokens like 'R', 'G', 'D' (no digit) with optional .  ' ^ suffix
@@ -357,7 +363,9 @@ def convert_cmn_to_ctab(cmn_filepath: str) -> dict:
         # ── Command line ──────────────────────────────
         m = _CMD_RE.match(line)
         if m:
-            key, val = m.group(1), int(m.group(2))
+            key = m.group(1)
+            value_text = m.group(2)
+            val = float(value_text) if key == 'S' else int(value_text)
             if key == 'T':
                 thaala_idx = val
             elif key == 'J':
@@ -371,7 +379,8 @@ def convert_cmn_to_ctab(cmn_filepath: str) -> dict:
                 if pending is not None:
                     rows.append(pending)
                     pending = None
-                current_speed = val
+                current_speed = (
+                    str(int(val)) if val.is_integer() else str(val))
             continue
 
         # ── Comment / lyric line ─────────────────────

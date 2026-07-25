@@ -5,7 +5,7 @@ import os
 import math
 import time
 import threading
-from midiutil.MidiFile import MIDIFile
+from midiutil.MidiFile import MIDIFile, TICKSPERQUARTERNOTE
 from carnatic import cparser,settings, thaaLa#,midi2audio
 _PYGAME_FINISH_CLOCK_SECONDS = 30
 FREQ_FACTOR_1 = 4096/math.log(2)
@@ -121,40 +121,72 @@ def write_to_midifile_from_scamp_notes(scamp_note_list,midi_file_name = 'output.
     if include_percussion_layer:
         track_max = 2    
     #print('include percussion layer',include_percussion_layer,track_max)
-    midi_file = MIDIFile(numTracks=track_max)
+    # Quantize cumulative boundaries, rather than independently truncating
+    # every start time and duration. Fractional speeds such as 0.5 produce
+    # irrational beat durations; independent conversion can otherwise leave
+    # intermittent one-tick holes between consecutive notes.
+    midi_file = MIDIFile(
+        numTracks=track_max,
+        ticks_per_quarternote=TICKSPERQUARTERNOTE,
+        eventtime_is_ticks=True)
     for t in range(track_max):
         midi_file.addTrackName(track=t, time=0, trackName='sample track-'+str(t))
         midi_file.addTempo(track=t, time=0, tempo=settings.TEMPO)
-    cum_time_in_seconds = 0.0
+    cumulative_beats = 0.0
+    cumulative_tick = 0
+    melody_channel = 0
+    previous_midi_pitch = None
     if len(scamp_note_list)==0:
         return
     for note,(instrument, pitch,durn) in scamp_note_list:
         instrument_index = instrument # instrument_list.index(instrument)
-        time_in_seconds = durn  
+        duration_beats = durn
+        start_tick = cumulative_tick
+        cumulative_beats += duration_beats
+        end_tick = round(cumulative_beats * TICKSPERQUARTERNOTE)
+        duration_ticks = max(1, end_tick - start_tick)
+        cumulative_tick = start_tick + duration_ticks
         if note=='$':
             instrument_index = len(settings._ALL_INSTRUMENTS)+1
-            #print('silent',note,instrument, instrument_index, pitch,time_in_seconds,cum_time_in_seconds)
-            cum_time_in_seconds += time_in_seconds
+            previous_midi_pitch = None
             continue
-        #print(note,instrument, instrument_index, pitch,time_in_seconds,cum_time_in_seconds)
-        midi_file.addProgramChange(0, channel=0, time=cum_time_in_seconds, program=instrument_index)
-        midi_file.addNote(track=0, channel=0, pitch=round(pitch),time=cum_time_in_seconds,
-                          duration=time_in_seconds,volume=settings._INSTRUMENT_VOLUME_LEVELS[instrument_index])
-        cum_time_in_seconds += time_in_seconds
+        midi_pitch = round(pitch)
+        # Some SoundFont renderers occasionally suppress a same-channel
+        # retrigger when identical pitches meet at fractional-speed tick
+        # boundaries. Alternate two melody channels for an immediately
+        # repeated pitch so each Note Off is isolated from the next Note On.
+        if midi_pitch == previous_midi_pitch:
+            melody_channel = 1 - melody_channel
+        else:
+            melody_channel = 0
+        midi_file.addProgramChange(
+            0, channel=melody_channel, time=start_tick,
+            program=instrument_index)
+        midi_file.addNote(
+            track=0, channel=melody_channel, pitch=midi_pitch,
+            time=start_tick,
+            duration=duration_ticks,
+            volume=settings._INSTRUMENT_VOLUME_LEVELS[instrument_index])
+        previous_midi_pitch = midi_pitch
     if include_percussion_layer and solkattu_list is not None:
-        cum_time_in_seconds = 0.0
+        cumulative_beats = 0.0
+        cumulative_tick = 0
         for beat_name, (instrument, pitch, durn) in solkattu_list:
             instrument_index = instrument
-            time_in_seconds = durn
+            duration_beats = durn
+            start_tick = cumulative_tick
+            cumulative_beats += duration_beats
+            end_tick = round(cumulative_beats * TICKSPERQUARTERNOTE)
+            duration_ticks = max(1, end_tick - start_tick)
+            cumulative_tick = start_tick + duration_ticks
             if beat_name == '$':
-                cum_time_in_seconds += time_in_seconds
                 continue
             # Use channel 9 for percussion (GM standard) on track 1
-            midi_file.addProgramChange(1, channel=9, time=cum_time_in_seconds, program=instrument_index)
+            midi_file.addProgramChange(
+                1, channel=9, time=start_tick, program=instrument_index)
             midi_file.addNote(track=1, channel=9, pitch=round(pitch),
-                              time=cum_time_in_seconds, duration=time_in_seconds,
+                              time=start_tick, duration=duration_ticks,
                               volume=100)
-            cum_time_in_seconds += time_in_seconds
     with open(midi_file_name, 'wb') as binfile:
         midi_file.writeFile(binfile)
 def _play_music(music_file):

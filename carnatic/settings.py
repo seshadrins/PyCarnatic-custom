@@ -52,7 +52,7 @@ THAALA_PATTERN_FILE = _CONFIG_PATH + "thaaLaPattern2.inp"
 _NOTES_PATTERN_1 = "(([SsPp]|[RrGgMmDdNn][1-4]?)([\\.\\'\\^]?)([</!~>]?[1-5]?))"
 _NOTES_PATTERN = r"([SsRrGgMmPpDdNn,;\(\)/!][1-4]?[\.\'\^]?[<~>]?[1-5]?)"
 _COMMENT_PATTERN = r"^\s*\{(?P<comment>.*)"
-_COMMAND_PATTERN = r"^\s*[#](?P<cmd_key>[\$CDIJMNPST])(?P<cmd_value>\d*)" # V1.2.2 Removed K and added C
+_COMMAND_PATTERN = r"^\s*[#](?P<cmd_key>[\$CDIJMNPST])(?P<cmd_value>\d*(?:\.\d+)?)" # V1.2.2 Removed K and added C
 _SILENT_PATTERN = r"(\$)"
 _DIRECTION_PATTERN = r"^\s*(?P<dir_key>[UD])(?P<dir_value>\d.*)"
 """ RAAGA SPECIFIC VARIABES """
