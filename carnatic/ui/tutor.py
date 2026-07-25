@@ -660,17 +660,16 @@ class TutorUI(QMainWindow):
             print("Notes on screen could not be saved to",_TEMP_FILE)
         return _TEMP_FILE        
     def _stop_playing(self):
-        if self.MPlayer and self.MPlayer.is_playing:
+        if self.MPlayer:
             self.MPlayer.stop()
             self._pauseButtonAction.setEnabled(False)
             self._stopButtonAction.setEnabled(False)
-            self.MPlayer.is_playing = False
     def _pause_or_resume_playing(self):
         if self.MPlayer and self.MPlayer.is_playing:
             self.MPlayer.pause()
             self._pauseButtonAction.setToolTip('Click to resume the player')
             self.MPlayer.is_playing = False
-        elif self.MPlayer and not self.MPlayer.is_playing:
+        elif self.MPlayer and self.MPlayer.is_paused:
             self.MPlayer.resume()
             self._pauseButtonAction.setToolTip('Click to pause the player')
             self.MPlayer.is_playing = True
@@ -876,4 +875,3 @@ if __name__ == "__main__":
     show_ui(language='ta',
             raaga_list_index=settings.RAAGA_LIST_SELECTION.SIX_OR_MORE_NOTE_RAAGAS_ONLY,
             player_type=settings.PLAYER_TYPE.SF2_LOADER)
-    

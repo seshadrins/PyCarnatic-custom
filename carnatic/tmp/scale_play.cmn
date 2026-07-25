@@ -1,12 +1,12 @@
 {Geetham
-#M28
-{Scale: Mohanam
-{ Ragam: Mohanam
+#M17
+{Scale: VasanthA
+{ Ragam: VasanthA
 { Talam: Triputa (Chathurasra Jathi)
 #T4
 #J2
 #D60
 {Aarohanam:
-S R2 G3 P | D2 S^ | - - ||
+S M1 G3 M1 | D2 N3 | S^ - ||
 {Avarohanam:
-S^ D2 P G3 | R2 S | - - ||
+S^ N3 D2 M1 | G3 R1 | S - ||

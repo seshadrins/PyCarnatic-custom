@@ -4,6 +4,7 @@ import musicpy as mp
 import os
 import math
 import time
+import threading
 from midiutil.MidiFile import MIDIFile
 from carnatic import cparser,settings, thaaLa#,midi2audio
 _PYGAME_FINISH_CLOCK_SECONDS = 30
@@ -14,6 +15,9 @@ class MPlayer(sf2.sf2_loader):
     def __init__(self,sound_font_file=settings._SOUND_FONT_FILE):
         super().__init__()
         self.is_playing = False
+        self.is_paused = False
+        self._playback_lock = threading.Lock()
+        self._playback_generation = 0
         self.loader = sf2.sf2_loader(file=sound_font_file)
         # Initialise pygame once here on the main thread.
         pygame.init()
@@ -32,10 +36,22 @@ class MPlayer(sf2.sf2_loader):
         """
         if not os.path.exists(midi_file):
             raise FileNotFoundError("midi file: " + midi_file + ' does not exist')
+        with self._playback_lock:
+            self._playback_generation += 1
+            playback_generation = self._playback_generation
         self.is_playing = True
+        self.is_paused = False
         print('synthesising midi file', midi_file)
         # Step 1 – offline synthesis (slow: renders the whole piece to a WAV buffer)
         audio = self.loader.export_midi_file(midi_file, get_audio=True)
+        # STOP may be pressed while the MIDI is being rendered.  In that case
+        # there is no mixer channel to stop yet, so do not start the sound after
+        # rendering completes.
+        with self._playback_lock:
+            if playback_generation != self._playback_generation:
+                self.is_playing = False
+                self.is_paused = False
+                return
         # Step 2 – notify caller that audio is about to start
         if on_audio_start is not None:
             on_audio_start()
@@ -49,6 +65,8 @@ class MPlayer(sf2.sf2_loader):
         # pygame.event.poll() must also not be called from a background thread.
         while mp.pygame.mixer.get_busy():
             time.sleep(0.01)
+        self.is_playing = False
+        self.is_paused = False
         print('playing finished')
     def play_audio_file(self,audio_file):
         audio_file = os.path.abspath(audio_file)
@@ -70,19 +88,23 @@ class MPlayer(sf2.sf2_loader):
         if self.is_playing:
             self.loader.pause()
             self.is_playing = False
+            self.is_paused = True
             #print('cmidi paused',self.is_playing)
     def resume(self):
         #print('cmidi resume',self.is_playing)
-        if not self.is_playing:
+        if self.is_paused:
             self.loader.unpause()
             self.is_playing = True
+            self.is_paused = False
             #print('cmidi resumed',self.is_playing)
     def stop(self):
-        #print('cmidi stop',self.is_playing)
-        if self.is_playing:
-            self.loader.stop()
-            self.is_playing = False        
-            #print('cmidi stopped',self.is_playing)
+        # Invalidate playback even when audio is paused or still being
+        # synthesised, then stop any channel which is already active.
+        with self._playback_lock:
+            self._playback_generation += 1
+        self.loader.stop()
+        self.is_playing = False
+        self.is_paused = False
     def save_as_mp3(self,midi_file,mp3_file):
         self.loader.export_midi_file(midi_file,name=mp3_file, format='mp3', export_args={'bitrate': '320k'})       
 def _get_time_in_beats(time_in_sec):

@@ -1430,9 +1430,8 @@ class TabularEditorDialog(QDialog):
     def _stop(self):
         self._highlight_timer.stop()
         self._clear_all_highlights()
-        if self.mplayer and self.mplayer.is_playing:
+        if self.mplayer:
             self.mplayer.stop()
-            self.mplayer.is_playing = False
             self._btn_play.setEnabled(True)
 
     # ── Direct CTAB → MIDI engine ─────────────────
