@@ -6,9 +6,12 @@ Tabular Notation Editor (.ctab)
 """
 import os
 import re
+import copy
+import zipfile
 import time as _time
 import threading
-from PyQt6.QtCore import Qt, QTimer, QEvent
+import xml.etree.ElementTree as ET
+from PyQt6.QtCore import Qt, QTimer, QEvent, QItemSelectionModel
 from PyQt6.QtWidgets import (
     QApplication, QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox,
     QLabel, QLineEdit, QComboBox, QPushButton, QTableWidget,
@@ -189,6 +192,8 @@ class NoteCell(QWidget):
             resolved = self.editor_ref._resolve_note(
                 raw, self.table_row, self.table_col)
             if resolved != raw:
+                if len(resolved) > self.note_edit.maxLength():
+                    self.note_edit.setMaxLength(len(resolved))
                 self.note_edit.setText(resolved)
 
     # Convenience accessors
@@ -238,6 +243,8 @@ class TransitionCell(QWidget):
             resolved = self.editor_ref._resolve_note(
                 raw, self.table_row, self.table_col)
             if resolved != raw:
+                if len(resolved) > self.edit.maxLength():
+                    self.edit.setMaxLength(len(resolved))
                 self.edit.setText(resolved)
 
     def transition(self) -> str:
@@ -281,6 +288,8 @@ class TabularEditorDialog(QDialog):
         self._show_transitions: bool = False
         self._max_chars_per_cell: int = _DEFAULT_NOTE_CELL_MAX_CHARS
         self._aksharas_per_avartam: int = 8  # filled by _rebuild_grid
+        self._row_clipboard: list[dict] = []
+        self._row_clipboard_shape: tuple | None = None
 
         # Playback cell-highlighting support
         self._highlight_timer = QTimer(self)
@@ -320,18 +329,23 @@ class TabularEditorDialog(QDialog):
         btn_bar = QHBoxLayout()
         self._btn_add = QPushButton("+ Add Avartam")
         self._btn_del = QPushButton("✕ Delete Row")
+        self._btn_del.setText("✕ Delete Row(s)")
+        self._btn_copy = QPushButton("Copy Row(s)")
+        self._btn_paste = QPushButton("Paste Row(s)")
+        self._btn_paste.setEnabled(False)
         self._btn_new = QPushButton("New")
         self._btn_open = QPushButton("Open…")
         self._btn_save = QPushButton("Save")
         self._btn_save_as = QPushButton("Save As…")
         self._btn_import_cmn = QPushButton("Import CMN…")
         self._btn_import_csv = QPushButton("Import CSV…")
-        self._btn_export_csv = QPushButton("Export CSV…")
+        self._btn_export_csv = QPushButton("Export…")
         self._btn_play = QPushButton("▶ Play")
         self._btn_stop = QPushButton("■ Stop")
         self._btn_cmn = QPushButton("Open CMN Editor…")
         self._btn_close = QPushButton("Close")
-        for btn in [self._btn_add, self._btn_del, self._btn_new,
+        for btn in [self._btn_add, self._btn_del,
+                    self._btn_copy, self._btn_paste, self._btn_new,
                     self._btn_open, self._btn_save, self._btn_save_as,
                     self._btn_import_cmn, self._btn_import_csv,
                     self._btn_export_csv,
@@ -347,6 +361,7 @@ class TabularEditorDialog(QDialog):
         self._table.setTabKeyNavigation(False)   # our _CellLineEdit handles Tab
         self._table.setAlternatingRowColors(True)
         self._table.verticalHeader().setDefaultSectionSize(52)
+        self._table.installEventFilter(self)
         self._table.viewport().installEventFilter(self)
         self._table.verticalScrollBar().installEventFilter(self)
         root.addWidget(self._table)
@@ -354,13 +369,15 @@ class TabularEditorDialog(QDialog):
         # Connections
         self._btn_add.clicked.connect(self._add_avartam_row)
         self._btn_del.clicked.connect(self._delete_selected_row)
+        self._btn_copy.clicked.connect(self._copy_selected_rows)
+        self._btn_paste.clicked.connect(self._paste_copied_rows)
         self._btn_new.clicked.connect(self._new_file)
         self._btn_open.clicked.connect(self._open_file)
         self._btn_save.clicked.connect(self._save_file)
         self._btn_save_as.clicked.connect(self._save_as_file)
         self._btn_import_cmn.clicked.connect(self._import_cmn_file)
         self._btn_import_csv.clicked.connect(self._import_csv)
-        self._btn_export_csv.clicked.connect(self._export_csv)
+        self._btn_export_csv.clicked.connect(self._export_spreadsheet)
         self._btn_play.clicked.connect(self._play)
         self._btn_stop.clicked.connect(self._stop)
         self._btn_cmn.clicked.connect(self._open_cmn_editor)
@@ -368,6 +385,26 @@ class TabularEditorDialog(QDialog):
 
     def eventFilter(self, watched, event):
         """Give manual scrolling a short grace period before playback follows again."""
+        if (hasattr(self, '_table')
+                and watched in (self._table, self._table.viewport())
+                and event.type() == QEvent.Type.KeyPress):
+            modifiers = event.modifiers()
+            if (modifiers & Qt.KeyboardModifier.ControlModifier
+                    and event.key() == Qt.Key.Key_C):
+                self._copy_selected_rows()
+                event.accept()
+                return True
+            if (modifiers & Qt.KeyboardModifier.ControlModifier
+                    and event.key() == Qt.Key.Key_V):
+                self._paste_copied_rows()
+                event.accept()
+                return True
+            if (modifiers == Qt.KeyboardModifier.NoModifier
+                    and event.key() == Qt.Key.Key_Delete):
+                self._delete_selected_row()
+                event.accept()
+                return True
+
         if (hasattr(self, '_table')
                 and watched in (self._table.viewport(),
                                 self._table.verticalScrollBar())):
@@ -829,6 +866,7 @@ class TabularEditorDialog(QDialog):
         # Re-populate existing display rows
         for row_data in existing:
             self._insert_row_from_data(row_data)
+        self._renumber_bars()
 
     def _add_avartam_row(self):
         """Insert an empty avartam row.
@@ -837,9 +875,11 @@ class TabularEditorDialog(QDialog):
         the last selected row; otherwise it is appended at the end.
         """
         selected = sorted(
-            {i.row() for i in self._table.selectedItems() if i.row() > 0})
+            self._selected_data_rows())
         insert_at = selected[-1] + 1 if selected else self._table.rowCount()
         self._insert_avartam_at(insert_at)
+        self._renumber_bars()
+        self._select_rows([insert_at])
 
     def _insert_avartam_at(self, r: int):
         """Insert a blank display row at table row index *r* and refresh refs.
@@ -885,13 +925,14 @@ class TabularEditorDialog(QDialog):
                     cell.table_row = r
                     cell.table_col = col
 
-    def _insert_row_from_data(self, note_lyric_pair: dict):
+    def _insert_row_from_data(self, note_lyric_pair: dict,
+                              row: int | None = None):
         """Insert a display row from notes, transitions, and lyrics.
 
         The flat lists hold all N avartams' data
         concatenated (SEP columns are not counted).
         """
-        r = self._table.rowCount()
+        r = self._table.rowCount() if row is None else row
         self._table.insertRow(r)
         self._table.setRowHeight(r, 52)
         self._init_fixed_cells(r,
@@ -928,6 +969,7 @@ class TabularEditorDialog(QDialog):
                 cell.set_lyric(lyrics[data_ci])
             self._table.setCellWidget(r, col, cell)
             data_ci += 1
+        self._refresh_cell_refs()
 
     def _init_fixed_cells(self, row: int,
                           section: str = '', speed: str = '1', bar: str = ''):
@@ -951,12 +993,97 @@ class TabularEditorDialog(QDialog):
         bar_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setItem(row, 2, bar_item)
 
+    def _selected_data_rows(self) -> list[int]:
+        """Return unique selected data rows in visual order."""
+        selection = self._table.selectionModel()
+        if selection is None:
+            return []
+        return sorted(
+            index.row() for index in selection.selectedRows() if index.row() > 0)
+
+    def _row_shape(self) -> tuple:
+        """Describe the grid shape required by a copied row payload."""
+        return (
+            self._avartams_per_line,
+            self._aksharas_per_avartam,
+            tuple(self._col_anga_types),
+        )
+
+    def _renumber_bars(self):
+        """Number each display row by the first avartam it contains."""
+        for row in range(1, self._table.rowCount()):
+            starting_bar = (
+                (row - 1) * self._avartams_per_line + 1)
+            item = self._table.item(row, 2)
+            if item is None:
+                item = QTableWidgetItem()
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                self._table.setItem(row, 2, item)
+            item.setText(str(starting_bar))
+
+    def _select_rows(self, rows: list[int]):
+        """Replace the selection with the supplied valid data rows."""
+        self._table.clearSelection()
+        selection = self._table.selectionModel()
+        if selection is None:
+            return
+        flags = (
+            QItemSelectionModel.SelectionFlag.Select
+            | QItemSelectionModel.SelectionFlag.Rows)
+        valid_rows = [
+            row for row in rows if 0 < row < self._table.rowCount()]
+        if valid_rows:
+            selection.setCurrentIndex(
+                self._table.model().index(valid_rows[0], 2),
+                QItemSelectionModel.SelectionFlag.NoUpdate)
+        for row in valid_rows:
+            selection.select(self._table.model().index(row, 0), flags)
+
     def _delete_selected_row(self):
-        rows = sorted(set(i.row() for i in self._table.selectedItems()),
-                      reverse=True)
-        for r in rows:
-            if r > 0:   # never delete the header row
-                self._table.removeRow(r)
+        rows = self._selected_data_rows()
+        if not rows:
+            return
+        first_deleted = rows[0]
+        for row in reversed(rows):
+            self._table.removeRow(row)
+        self._refresh_cell_refs()
+        self._renumber_bars()
+        if self._table.rowCount() > 1:
+            self._select_rows([
+                min(first_deleted, self._table.rowCount() - 1)])
+
+    def _copy_selected_rows(self):
+        rows = self._selected_data_rows()
+        if not rows:
+            return
+        grid_rows = self._collect_grid_rows()
+        self._row_clipboard = copy.deepcopy(
+            [grid_rows[row - 1] for row in rows])
+        self._row_clipboard_shape = self._row_shape()
+        self._btn_paste.setEnabled(True)
+
+    def _paste_copied_rows(self):
+        if not self._row_clipboard:
+            return
+        if self._row_clipboard_shape != self._row_shape():
+            QMessageBox.warning(
+                self, "Cannot Paste Rows",
+                "The copied rows do not match the current Thaalam, Jaathi, "
+                "or Avartams Per Line grid.")
+            return
+
+        selected = self._selected_data_rows()
+        insert_at = (
+            selected[-1] + 1 if selected else self._table.rowCount())
+        pasted_rows = []
+        for offset, row_data in enumerate(
+                copy.deepcopy(self._row_clipboard)):
+            row = insert_at + offset
+            self._insert_row_from_data(row_data, row=row)
+            pasted_rows.append(row)
+        self._refresh_cell_refs()
+        self._renumber_bars()
+        self._select_rows(pasted_rows)
 
     # ── Collect Data from Grid ─────────────────────
     def _collect_grid_rows(self) -> list:
@@ -1111,6 +1238,7 @@ class TabularEditorDialog(QDialog):
                 'lyrics': combined_lyrics,
             })
             i += n
+        self._renumber_bars()
 
     # ── File Operations ────────────────────────────
     def _new_file(self):
@@ -1277,56 +1405,325 @@ class TabularEditorDialog(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "Import CSV Error", str(e))
 
-    def _export_csv(self):
-        """Export the current grid to a CSV file.
+    _EXPORT_SWARA_RE = re.compile(
+        r"([SP]|[RGMDN][1-4]?)([.']?)(?:~[1-4]?)?")
 
-        Layout: one spreadsheet row per *display* row (i.e. per N-avartam group).
-        Note, transition, and lyric data appear in adjacent columns per akshara.
-        Separator columns are omitted; avartam groups are separated by an empty column.
-        """
-        import csv as _csv
-        path, _ = QFileDialog.getSaveFileName(
-            self, "Export CSV",
-            (self._filepath.replace('.ctab', '') if self._filepath
-             else settings._LESSONS_PATH),
-            "CSV Files (*.csv);;All Files (*)")
-        if not path:
-            return
-        if not path.endswith('.csv'):
-            path += '.csv'
-        try:
-            n   = self._avartams_per_line
-            aks = self._aksharas_per_avartam
-            # Build header row
-            header = ['Section', 'Speed', 'Bar']
+    @classmethod
+    def _clean_swara_for_export(cls, value: str) -> str:
+        """Remove swara variants and gamakas without altering other notation."""
+        def _clean(match):
+            token = match.group(1)
+            return token[0] + match.group(2)
+
+        return cls._EXPORT_SWARA_RE.sub(_clean, str(value))
+
+    def _build_csv_rows(self) -> list[list[str]]:
+        """Build export rows, omitting entirely blank transition/lyric columns."""
+        n = self._avartams_per_line
+        aks = self._aksharas_per_avartam
+        grid_rows = self._collect_grid_rows()
+        slot_count = n * aks
+
+        include_transition = [
+            any(
+                idx < len(row.get('transitions', []))
+                and str(row['transitions'][idx]).strip()
+                for row in grid_rows)
+            for idx in range(slot_count)
+        ]
+        include_lyric = [
+            any(
+                idx < len(row.get('lyrics', []))
+                and str(row['lyrics'][idx]).strip()
+                for row in grid_rows)
+            for idx in range(slot_count)
+        ]
+
+        header = ['Section', 'Speed', 'Bar']
+        for av in range(n):
+            if av > 0:
+                header.append('')
+            for i in range(aks):
+                idx = av * aks + i
+                header.append(f"Av{av+1}_N{i+1}")
+                if include_transition[idx]:
+                    header.append(f"Av{av+1}_T{i+1}")
+                if include_lyric[idx]:
+                    header.append(f"Av{av+1}_L{i+1}")
+
+        rows_out = [header]
+        for row in grid_rows:
+            notes = row.get('notes', [])
+            transitions = row.get('transitions', [])
+            lyrics = row.get('lyrics', [])
+            row_out = [row['section'], row['speed'], row['bar']]
             for av in range(n):
                 if av > 0:
-                    header.append('')   # avartam separator
+                    row_out.append('')
                 for i in range(aks):
-                    header.append(f"Av{av+1}_N{i+1}")   # note
-                    header.append(f"Av{av+1}_T{i+1}")   # transition
-                    header.append(f"Av{av+1}_L{i+1}")   # lyric
-            rows_out = [header]
-            for rd in self._collect_grid_rows():
-                notes = rd['notes']
-                transitions = rd.get('transitions', [])
-                lyrics = rd['lyrics']
-                row_out = [rd['section'], rd['speed'], rd['bar']]
-                for av in range(n):
-                    if av > 0:
-                        row_out.append('')
-                    for i in range(aks):
-                        idx = av * aks + i
-                        row_out.append(notes[idx]  if idx < len(notes)  else '')
-                        row_out.append(transitions[idx] if idx < len(transitions) else '')
-                        row_out.append(lyrics[idx] if idx < len(lyrics) else '')
-                rows_out.append(row_out)
+                    idx = av * aks + i
+                    note = notes[idx] if idx < len(notes) else ''
+                    row_out.append(self._clean_swara_for_export(note))
+                    if include_transition[idx]:
+                        transition = (
+                            transitions[idx] if idx < len(transitions) else '')
+                        row_out.append(
+                            self._clean_swara_for_export(transition))
+                    if include_lyric[idx]:
+                        row_out.append(
+                            lyrics[idx] if idx < len(lyrics) else '')
+            rows_out.append(row_out)
+        return rows_out
 
-            with open(path, 'w', newline='', encoding='utf-8-sig') as f:
-                _csv.writer(f).writerows(rows_out)
+    def _build_excel_sheets(self) -> list[tuple[str, list[list[str]]]]:
+        """Build separate Notes and Lyrics worksheet data."""
+        n = self._avartams_per_line
+        aks = self._aksharas_per_avartam
+        grid_rows = self._collect_grid_rows()
+        slot_count = n * aks
+
+        include_transition = [
+            any(
+                idx < len(row.get('transitions', []))
+                and str(row['transitions'][idx]).strip()
+                for row in grid_rows)
+            for idx in range(slot_count)
+        ]
+        include_lyric = [
+            any(
+                idx < len(row.get('lyrics', []))
+                and str(row['lyrics'][idx]).strip()
+                for row in grid_rows)
+            for idx in range(slot_count)
+        ]
+
+        notes_header = ['Section', 'Speed', 'Bar']
+        for av in range(n):
+            if av > 0:
+                notes_header.append('')
+            for i in range(aks):
+                idx = av * aks + i
+                notes_header.append(f"Av{av+1}_N{i+1}")
+                if include_transition[idx]:
+                    notes_header.append(f"Av{av+1}_T{i+1}")
+
+        notes_rows = [notes_header]
+        for row in grid_rows:
+            notes = row.get('notes', [])
+            transitions = row.get('transitions', [])
+            output = [row['section'], row['speed'], row['bar']]
+            for av in range(n):
+                if av > 0:
+                    output.append('')
+                for i in range(aks):
+                    idx = av * aks + i
+                    note = notes[idx] if idx < len(notes) else ''
+                    output.append(self._clean_swara_for_export(note))
+                    if include_transition[idx]:
+                        transition = (
+                            transitions[idx] if idx < len(transitions) else '')
+                        output.append(
+                            self._clean_swara_for_export(transition))
+            notes_rows.append(output)
+
+        sheets = [('Notes', notes_rows)]
+        if any(include_lyric):
+            lyrics_header = ['Section', 'Speed', 'Bar']
+            for av in range(n):
+                included = [
+                    i for i in range(aks)
+                    if include_lyric[av * aks + i]]
+                if not included:
+                    continue
+                if len(lyrics_header) > 3:
+                    lyrics_header.append('')
+                lyrics_header.extend(
+                    f"Av{av+1}_L{i+1}" for i in included)
+
+            lyrics_rows = [lyrics_header]
+            for row in grid_rows:
+                lyrics = row.get('lyrics', [])
+                output = [row['section'], row['speed'], row['bar']]
+                wrote_avartam = False
+                for av in range(n):
+                    included = [
+                        i for i in range(aks)
+                        if include_lyric[av * aks + i]]
+                    if not included:
+                        continue
+                    if wrote_avartam:
+                        output.append('')
+                    output.extend(
+                        lyrics[av * aks + i]
+                        if av * aks + i < len(lyrics) else ''
+                        for i in included)
+                    wrote_avartam = True
+                lyrics_rows.append(output)
+            sheets.append(('Lyrics', lyrics_rows))
+        return sheets
+
+    @staticmethod
+    def _excel_column_name(number: int) -> str:
+        """Convert a one-based column number to an Excel column name."""
+        result = ''
+        while number:
+            number, remainder = divmod(number - 1, 26)
+            result = chr(65 + remainder) + result
+        return result
+
+    @classmethod
+    def _worksheet_xml(cls, rows: list[list[str]]) -> bytes:
+        """Create a minimal OOXML worksheet using inline strings."""
+        namespace = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
+        ET.register_namespace('', namespace)
+        worksheet = ET.Element(f'{{{namespace}}}worksheet')
+        sheet_data = ET.SubElement(worksheet, f'{{{namespace}}}sheetData')
+        for row_number, values in enumerate(rows, 1):
+            row_element = ET.SubElement(
+                sheet_data, f'{{{namespace}}}row',
+                {'r': str(row_number)})
+            for column_number, value in enumerate(values, 1):
+                text = str(value)
+                cell = ET.SubElement(
+                    row_element, f'{{{namespace}}}c',
+                    {
+                        'r': (
+                            f'{cls._excel_column_name(column_number)}'
+                            f'{row_number}'),
+                        't': 'inlineStr',
+                    })
+                inline = ET.SubElement(cell, f'{{{namespace}}}is')
+                text_element = ET.SubElement(inline, f'{{{namespace}}}t')
+                if text != text.strip():
+                    text_element.set(
+                        '{http://www.w3.org/XML/1998/namespace}space',
+                        'preserve')
+                text_element.text = text
+        return ET.tostring(
+            worksheet, encoding='utf-8', xml_declaration=True)
+
+    @classmethod
+    def _write_xlsx(cls, path: str,
+                    sheets: list[tuple[str, list[list[str]]]]):
+        """Write a dependency-free XLSX workbook containing the given sheets."""
+        main_ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
+        rel_ns = (
+            'http://schemas.openxmlformats.org/officeDocument/2006/'
+            'relationships')
+        package_rel_ns = (
+            'http://schemas.openxmlformats.org/package/2006/relationships')
+        content_ns = (
+            'http://schemas.openxmlformats.org/package/2006/content-types')
+        ET.register_namespace('', main_ns)
+        ET.register_namespace('r', rel_ns)
+
+        workbook = ET.Element(f'{{{main_ns}}}workbook')
+        workbook_sheets = ET.SubElement(workbook, f'{{{main_ns}}}sheets')
+        for index, (name, _) in enumerate(sheets, 1):
+            ET.SubElement(
+                workbook_sheets, f'{{{main_ns}}}sheet',
+                {
+                    'name': name,
+                    'sheetId': str(index),
+                    f'{{{rel_ns}}}id': f'rId{index}',
+                })
+
+        workbook_rels = ET.Element(f'{{{package_rel_ns}}}Relationships')
+        for index in range(1, len(sheets) + 1):
+            ET.SubElement(
+                workbook_rels, f'{{{package_rel_ns}}}Relationship',
+                {
+                    'Id': f'rId{index}',
+                    'Type': (
+                        f'{rel_ns}/worksheet'),
+                    'Target': f'worksheets/sheet{index}.xml',
+                })
+
+        root_rels = ET.Element(f'{{{package_rel_ns}}}Relationships')
+        ET.SubElement(
+            root_rels, f'{{{package_rel_ns}}}Relationship',
+            {
+                'Id': 'rId1',
+                'Type': f'{rel_ns}/officeDocument',
+                'Target': 'xl/workbook.xml',
+            })
+
+        content_types = ET.Element(f'{{{content_ns}}}Types')
+        ET.SubElement(
+            content_types, f'{{{content_ns}}}Default',
+            {
+                'Extension': 'rels',
+                'ContentType': (
+                    'application/vnd.openxmlformats-package.'
+                    'relationships+xml'),
+            })
+        ET.SubElement(
+            content_types, f'{{{content_ns}}}Default',
+            {'Extension': 'xml', 'ContentType': 'application/xml'})
+        ET.SubElement(
+            content_types, f'{{{content_ns}}}Override',
+            {
+                'PartName': '/xl/workbook.xml',
+                'ContentType': (
+                    'application/vnd.openxmlformats-officedocument.'
+                    'spreadsheetml.sheet.main+xml'),
+            })
+        for index in range(1, len(sheets) + 1):
+            ET.SubElement(
+                content_types, f'{{{content_ns}}}Override',
+                {
+                    'PartName': f'/xl/worksheets/sheet{index}.xml',
+                    'ContentType': (
+                        'application/vnd.openxmlformats-officedocument.'
+                        'spreadsheetml.worksheet+xml'),
+                })
+
+        xml = lambda element: ET.tostring(
+            element, encoding='utf-8', xml_declaration=True)
+        with zipfile.ZipFile(
+                path, 'w', compression=zipfile.ZIP_DEFLATED) as workbook_zip:
+            workbook_zip.writestr('[Content_Types].xml', xml(content_types))
+            workbook_zip.writestr('_rels/.rels', xml(root_rels))
+            workbook_zip.writestr('xl/workbook.xml', xml(workbook))
+            workbook_zip.writestr(
+                'xl/_rels/workbook.xml.rels', xml(workbook_rels))
+            for index, (_, rows) in enumerate(sheets, 1):
+                workbook_zip.writestr(
+                    f'xl/worksheets/sheet{index}.xml',
+                    cls._worksheet_xml(rows))
+
+    def _export_spreadsheet(self):
+        """Export either CSV or a multi-sheet XLSX workbook."""
+        import csv as _csv
+        path, selected_filter = QFileDialog.getSaveFileName(
+            self, "Export Spreadsheet",
+            (self._filepath.replace('.ctab', '') if self._filepath
+             else settings._LESSONS_PATH),
+            "Excel Workbook (*.xlsx);;CSV Files (*.csv);;All Files (*)")
+        if not path:
+            return
+        lower_path = path.lower()
+        export_csv = (
+            lower_path.endswith('.csv')
+            or ('CSV Files' in selected_filter
+                and not lower_path.endswith('.xlsx')))
+        if export_csv:
+            if not lower_path.endswith('.csv'):
+                path += '.csv'
+        elif not lower_path.endswith('.xlsx'):
+            path += '.xlsx'
+
+        try:
+            self._renumber_bars()
+            if export_csv:
+                with open(
+                        path, 'w', newline='', encoding='utf-8-sig') as file:
+                    _csv.writer(file).writerows(self._build_csv_rows())
+            else:
+                self._write_xlsx(path, self._build_excel_sheets())
 
             QMessageBox.information(self, "Exported",
-                                    f"CSV saved to:\n{path}")
+                                    f"Spreadsheet saved to:\n{path}")
         except Exception as e:
             QMessageBox.critical(self, "Export Error", str(e))
 
@@ -1934,6 +2331,9 @@ class TabularEditorDialog(QDialog):
 
     # Scale-position order for directional detection (0=lowest, 6=highest in octave)
     _SWARA_ORDER = {'S': 0, 'R': 1, 'G': 2, 'M': 3, 'P': 4, 'D': 5, 'N': 6}
+    _RESOLVABLE_SWARA_RE = re.compile(
+        r"([.]*)([SRGMPDN])([1-4]?)([\^'.]*)(~[1-4]?)?",
+        re.IGNORECASE)
 
     def _find_predecessor_swara_pos(self, row: int, col: int) -> int:
         """Return the scale position (0–6) of the closest non-empty, non-punctuation
@@ -1955,48 +2355,57 @@ class TabularEditorDialog(QDialog):
                 note = ''
             if note:
                 if note and note not in (',', ';', '-'):
-                    for ch in note:
-                        if ch.upper() in self._SWARA_ORDER:
-                            return self._SWARA_ORDER[ch.upper()]
+                    matches = list(self._RESOLVABLE_SWARA_RE.finditer(note))
+                    if matches:
+                        base = matches[-1].group(2).upper()
+                        return self._SWARA_ORDER[base]
             scan_col -= 1
 
     def _resolve_note(self, raw: str,
                       cell_row: int = -1, cell_col: int = -1) -> str:
-        """Resolve a generic swara to its raaga-specific variant, preserving octave markers.
-        Examples: 'R' -> 'R2', "R'" -> "R2'", '.R' -> '.R2'.
-        Already-specific notes (e.g. 'R2') pass through unchanged.
+        """Resolve every generic swara token to its raaga-specific variant.
+
+        Examples: ``R`` -> ``R2``, ``GM`` -> ``G3M1``, and
+        ``G M'`` -> ``G3 M1'``. Already-specific tokens pass through unchanged.
+        Octave markers, gamakas, spacing, commas, and duration symbols are
+        preserved.
 
         When direction-aware resolution is enabled (checkbox checked), the
-        predecessor note's scale position is used to select the aarohanam or
-        avarohanam variant automatically.
+        preceding swara, including an earlier token in the same cell, selects
+        the aarohanam or avarohanam variant.
         """
         if not raw or not self._note_map:
             return raw
-        # Match: optional leading dots (lower octave), bare letter (no digit follows),
-        # then optional octave suffix (^ or ' or .)
-        m = re.match(r"^([.]*)(S|R|G|M|P|D|N)([\^'.]*)$", raw.strip(), re.IGNORECASE)
-        if not m:
-            return raw  # already specific (e.g. 'R2') or non-note ('-', '=', '.')
-        prefix, base, suffix = m.groups()
-
-        # Choose note map
         use_smart = (
             hasattr(self, '_chk_smart_resolve')
             and self._chk_smart_resolve.isChecked()
             and cell_row > 0 and cell_col >= _HEADER_FIXED_COLS
         )
-        note_map = self._note_map  # default: combined (aro takes priority)
-        if use_smart and (self._aro_note_map or self._avro_note_map):
-            pred_pos = self._find_predecessor_swara_pos(cell_row, cell_col)
+        predecessor_pos = (
+            self._find_predecessor_swara_pos(cell_row, cell_col)
+            if use_smart else -1)
+
+        def _resolve_token(match):
+            nonlocal predecessor_pos
+            prefix, base, digit, suffix, gamaka = match.groups()
+            base = base.upper()
             curr_pos = self._SWARA_ORDER.get(base.upper(), -1)
-            if pred_pos >= 0 and curr_pos >= 0:
-                if curr_pos >= pred_pos:
+            note_map = self._note_map
+            if (use_smart and predecessor_pos >= 0 and curr_pos >= 0
+                    and (self._aro_note_map or self._avro_note_map)):
+                if curr_pos >= predecessor_pos:
                     note_map = self._aro_note_map or self._note_map   # ascending
                 else:
                     note_map = self._avro_note_map or self._note_map  # descending
+            predecessor_pos = curr_pos
+            if digit:
+                resolved = base + digit
+            else:
+                resolved = note_map.get(
+                    base, self._note_map.get(base, base))
+            return prefix + resolved + suffix + (gamaka or '')
 
-        resolved = note_map.get(base.upper(), self._note_map.get(base.upper(), base.upper()))
-        return prefix + resolved + suffix
+        return self._RESOLVABLE_SWARA_RE.sub(_resolve_token, raw)
 
     # ── Scale Playback ──────────────────────────────
     def _play_scale(self):

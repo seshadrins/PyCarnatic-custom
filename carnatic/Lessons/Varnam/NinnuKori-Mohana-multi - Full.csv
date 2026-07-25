@@ -1,0 +1,62 @@
+﻿Section,Speed,Bar,Av1_N1,Av1_L1,Av1_N2,Av1_L2,Av1_N3,Av1_L3,Av1_N4,Av1_L4,Av1_N5,Av1_L5,Av1_N6,Av1_L6,Av1_N7,Av1_L7,Av1_N8,Av1_L8,,Av2_N1,Av2_L1,Av2_N2,Av2_L2,Av2_N3,Av2_L3,Av2_N4,Av2_L4,Av2_N5,Av2_L5,Av2_N6,Av2_L6,Av2_N7,Av2_L7,Av2_N8,Av2_L8
+Pallavi,2,1,G,NI,",",.,G,NNU,",",.,R,KO,",",.,",",.,",",.,,S,RI,S,.,R,.,R,.,G,.,G,.,R,.,R,.
+Pallavi,2,3,S,YU,R,.,G,.,R,.,S,NN,R,AA,S,.,D.,NU,,S,RA,R,.,G,.,P,.,G,.,R,.,S,.,R,.
+Pallavi,2,5,G,NI,P,.,G,.,G,.,R,.,S-,.,R,KHI,G,.,,R,.,R,.,S,.,D.,.,S,LA,R,.,G,.,R,.
+Pallavi,2,7,G,LO,P,.,G,.,P,KA,D,.,P,.,D,NA,S',A,,D,.,D,.,P-,.,G,.,D,YA,P,.,G,KA,R,.
+Anupallavi,2,9,G,NA,",",.,G,NNU,",",.,P,PA,",",A,",",.,",",.,,G,LI,G,M,P,.,P,.,D,.,D,.,P,PA,",",.
+Anupallavi,2,11,D,SA,S',.,D,MA,D,.,P,.,G-,.,D,YA,P,.,,D-,.,G,MI,D,.,P,.,G,DE,R,.,S,.,R,.
+Anupallavi,2,13,G,NA,G,A,P,.,P,.,D,.,P-,.,D,ME,S',E,,D,.,S',DA,R',.,S',.,G',KRU,R',.,",",.,S',PA
+Anupallavi,2,15,D,.,S',.,R',JO,S',.,",",.,D,DA,P,.,D,.,,S',RA,D,.,",",.,P,.,G,DA,R,.,S,.,R,.
+Muktayi Swaram,2,17,G,,",",,R,,G,,R,,S,,R,,",",,,S,,R,,S,,G,,R,,G,,S,,R,
+Muktayi Swaram,2,19,S,,D.,,S,,R,,G,,R,,G,,P,,,G,,P,,D,,",",,P,,",",,",",,",",
+Muktayi Swaram,2,21,G,,P,,D,,P,,D,,S',,R',,G',,,R',,",",,G',,S',,",",,R',,D,,",",
+Muktayi Swaram,2,23,S',,P,,",",,D,,S',,R',,G',,S',,,",",,D,,P,,",",,G,,R,,S,,R,
+Pallavi,3,25,G,NI,",",.,G,NNU,",",.,R,KO,",",.,",",.,",",.,,S,RI,S,.,R,.,R,.,G,.,G,.,R,.,R,.
+Pallavi,3,27,S,YU,R,.,G,.,R,.,S,NN,R,AA,S,.,D.,NU,,S,RA,R,.,G,.,P,.,G,.,R,.,S,.,R,.
+Pallavi,3,29,G,NI,P,.,G,.,G,.,R,.,S-,.,R,KHI,G,.,,R,.,R,.,S,.,D.,.,S,LA,R,.,G,.,R,.
+Pallavi,3,31,G,LO,P,.,G,.,P,KA,D,.,P,.,D,NA,S',A,,D,.,D,.,P-,.,G,.,D,YA,P,.,G,KA,R,.
+Anupallavi,3,33,G,NA,",",.,G,NNU,",",.,P,PA,",",A,",",.,",",.,,G,LI,G,M,P,.,P,.,D,.,D,.,P,PA,",",.
+Anupallavi,3,35,D,SA,S',.,D,MA,D,.,P,.,G-,.,D,YA,P,.,,D-,.,G,MI,D,.,P,.,G,DE,R,.,S,.,R,.
+Anupallavi,3,37,G,NA,G,A,P,.,P,.,D,.,P-,.,D,ME,S',E,,D,.,S',DA,R',.,S',.,G',KRU,R',.,",",.,S',PA
+Anupallavi,3,39,D,.,S',.,R',JO,S',.,",",.,D,DA,P,.,D,.,,S',RA,D,.,",",.,P,.,G,DA,R,.,S,.,R,.
+Muktayi Swaram,3,41,G,,",",,R,,G,,R,,S,,R,,",",,,S,,R,,S,,G,,R,,G,,S,,R,
+Muktayi Swaram,3,43,S,,D.,,S,,R,,G,,R,,G,,P,,,G,,P,,D,,",",,P,,",",,",",,",",
+Muktayi Swaram,3,45,G,,P,,D,,P,,D,,S',,R',,G',,,R',,",",,G',,S',,",",,R',,D,,",",
+Muktayi Swaram,3,47,S',,P,,",",,D,,S',,R',,G',,S',,,",",,D,,P,,",",,G,,R,,S,,R,
+Pallavi,2,49,G,NI,",",.,G,NNU,",",.,R,KO,",",.,",",.,",",.,,S,RI,",",.,",",.,",",.,",",.,",",.,",",.,",",.
+Charanam 1,2,51,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 1,2,53,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,A,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,2,55,G,,",",,",",,",",,R,,",",,S,,",",,,R,,",",,",",,",",,D.,,",",,",",,",",
+Ettugada Swaram,2,57,R,,",",,D.,,",",,S,,",",,",",,",",,,R,,",",,",",,",",,G,,",",,R,,",",
+Charanam 1,3,59,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 1,3,61,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,.,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,3,63,G,,",",,",",,",",,R,,",",,S,,",",,,R,,",",,",",,",",,D.,,",",,",",,",",
+Ettugada Swaram,3,65,R,,",",,D.,,",",,S,,",",,",",,",",,,R,,",",,",",,",",,G,,",",,R,,",",
+Charanam 2,2,67,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 2,2,69,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,.,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,2,71,G,,",",,G,,R,,G,,R,,S,,R,,,G,,",",,G,,P.,,D.,,D.,,S,,R,
+Ettugada Swaram,2,73,G,,",",,G,,G,,D,,P,,G,,R,,,G,,",",,G,,S',,D,,P,,G,,R,
+Charanam 2,3,75,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 2,3,77,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,.,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,3,79,G,,",",,G,,R,,G,,R,,S,,R,,,G,,",",,G,,P.,,D.,,D.,,S,,R,
+Ettugada Swaram,3,81,G,,",",,G,,G,,D,,P,,G,,R,,,G,,",",,G,,S',,D,,P,,G,,R,
+Charanam 3,2,83,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 3,2,85,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,.,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,2,87,P,,",",,D,,D,,P,,",",,G,,R,,,S,,",",,R,,G,,R,,",",,S,,D.,
+Ettugada Swaram,2,89,S,,",",,R,,G,,P,,",",,D,,",",,,S',,S',,",",,D,,P,,",",,G,,R,
+Charanam 3,3,91,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 3,3,93,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,.,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,3,95,P,,",",,D,,D,,P,,",",,G,,R,,,S,,",",,R,,G,,R,,",",,S,,D.,
+Ettugada Swaram,3,97,S,,",",,R,,G,,P,,",",,D,,",",,,S',,S',,",",,D,,P,,",",,G,,R,
+Charanam 4,2,99,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 4,2,101,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,.,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,2,103,S',,",",,R',,G',,R',,S',,R',,S',,,D,,S',,D,,P,,G,,R,,S,,R,
+Ettugada Swaram,2,105,S,,",",,",",,",",,",",,",",,S,,S,,,R,,R,,G,,G,,P,,P,,D,,D,
+Ettugada Swaram,2,107,S',,R',,G',,R',,G',,R',,D,,S',,,R',,S',,R',,S',,P,,D,,S',,D,
+Ettugada Swaram,2,109,S',,D,,G,,P,,D,,P,,D,,P,,,R',,S',,D,,P,,G,,R,,S,,R,
+Charanam 4,3,111,G,SA,",",.,G,NNU,",",.,G,TH,P,AAN,G,.,R,.,,R,GA,G,.,P,.,G,.,P,SRI,",",.,P,.,",",.
+Charanam 4,3,113,G,NI,G,.,D,.,D,.,P,.,G,.,D,VA,D,.,,P,.,",",.,G,SA,P,",",G,.,R,.,S,",",R,.
+Ettugada Swaram,3,115,S',,",",,R',,G',,R',,S',,R',,S',,,D,,S',,D,,P,,G,,R,,S,,R,
+Ettugada Swaram,3,117,S,,",",,",",,",",,",",,",",,S,,S,,,R,,R,,G,,G,,P,,P,,D,,D,
+Ettugada Swaram,3,119,S',,R',,G',,R',,G',,R',,D,,S',,,R',,S',,R',,S',,P,,D,,S',,D,
+Ettugada Swaram,3,121,S',,D,,G,,P,,D,,P,,D,,P,,,R',,S',,D,,P,,G,,R,,S,,R,

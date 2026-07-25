@@ -1,0 +1,22 @@
+﻿Section,Speed,Bar,Av1_N1,Av1_N2,Av1_N3,Av1_N4,Av1_N5,Av1_N6,Av1_N7,Av1_N8
+Pallavi,1,1,",,SM",",GM,",",DM,",",DN,","S',",S'N,DN,"DMD,"
+Pallavi,1,2,",,S',",",R'S',",DN,DM,GMDN,S'R'S'N,DNDM,GMGR
+Pallavi,1,3,SNSM,",GM,",",DM,",",DN,","S',",S'N,DN,"DMD,"
+Pallavi,1,4,",,S',",",R'S',",DN,DM,GMDN,S'R'S'N,DNDM,GMGR
+Pallavi,1,5,SNSM,",GM,",",DM,",",DN,","S',",S'N,R'R'S'N,"DMD,"
+Pallavi,1,6,",,S',",",R'S',",DN,DM,GMDD,NNS'R',S'NDM,DMGR
+Pallavi,1,7,SNSM,",GM,",",DM,",",DN,","S',",S'N,R'R'S'N,"DMD,"
+Pallavi,1,8,",,S',",",R'S',",DN,DM,GMDD,NNS'R',S'NDM,DMGR
+Pallavi,1,9,SNSM,",GM,",",DM,",",DN,","S',",,,
+Anupallavi,1,10,",,S'N",",DMD",NS',R'S',",,S',",",R'S',",R'R'S'N,"DMD,"
+Anupallavi,1,11,",,S',",",R'S',",DN,DM,GMDD,NNS'R',S'NDM,DMGR
+Anupallavi,1,12,SNS'N,",DMD",NS',R'S',",,S',",",R'S',",R'R'S'N,"DMD,"
+Anupallavi,1,13,",,S',",",R'S',",DN,DM,GMDD,NNS'R',S'NDM,DMGR
+Pallavi,1,14,SNSM,",GM,",",DM,",",DN,","S',",,,
+Charanam 1,1,15,",,M,",",MM,",MM,MM,"S'S""ND",NNDM,MGDM,"GRS,"
+Charanam 1,1,16,",,S,",",RS,",SS,N.SRS,RS,"M,","GMN,","DMG,"
+Charanam 1,1,17,",,M,",",MM,",MM,MM,"S'S""ND",NNDM,MGDM,"GRS,"
+Charanam 1,1,18,",,S,",",RS,",SS,N.SRS,RS,"M,","GMN,","DMG,"
+Charanam 1,1,19,",,S'N",",DMD",NS',R'S',",,S',",",R'S',",R'R'S'N,"DMD,"
+Charanam 1,1,20,",,S',",",R'S',",DN,DM,GMDD,NNS'R',S'NDM,DMGR
+Charanam 1,1,21,SNSM,",GM,",",DM,",",DN,","S',",,,
