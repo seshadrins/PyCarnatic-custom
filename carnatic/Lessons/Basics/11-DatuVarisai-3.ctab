@@ -1,0 +1,25 @@
+Type|Geetham
+Title|DatuVarisai-3
+Ragam|MAyamAlava Gowla
+Melakartha|15
+Thaalam|THRIPUTAI
+Jaathi|CHATHUSRA
+Tempo|60
+Composer|
+Language|Sanskrit
+Description|
+AvartamsPerLine|1
+ShowTransitions|False
+MaxCharsPerCell|8
+---
+Section|Speed|Bar|RowType|A1|A2|A3|A4|A5|A6|A7|A8
+Pallavi|1.5|1|N|S|M1|G3|M1|S|R1|G3|M1
+Pallavi|1.5|2|N|R1|P|M1|P|R1|G3|M1|P
+Pallavi|1.5|3|N|G3|D1|P|D1|G3|M1|P|D1
+Pallavi|1.5|4|N|M1|N3|D1|N3|M1|P|D1|N3
+Pallavi|1.5|5|N|P|S'|N3|S'|P|D1|N3|S'
+Pallavi|1.5|6|N|S'|P|D1|P|S'|N3|D1|P
+Pallavi|1.5|7|N|N3|M1|P|M1|N3|D1|P|M1
+Pallavi|1.5|8|N|D1|G3|M1|G3|D1|P|M1|G3
+Pallavi|1.5|9|N|P|R1|G3|R1|P|M1|G3|R1
+Pallavi|1.5|10|N|M1|S|R1|S|M1|G3|R1|S
