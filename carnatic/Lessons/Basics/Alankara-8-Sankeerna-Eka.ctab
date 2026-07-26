@@ -1,0 +1,25 @@
+Type|Geetham
+Title|Alankara-8-Sankeerna-Eka
+Ragam|MAyamAlava Gowla
+Melakartha|15
+Thaalam|EKA
+Jaathi|SANKEERNA
+Tempo|60
+Composer|
+Language|Sanskrit
+Description|
+AvartamsPerLine|2
+ShowTransitions|False
+MaxCharsPerCell|7
+---
+Section|Speed|Bar|RowType|A1|A2|A3|A4|A5|A6|A7|A8|A9
+Pallavi|2|1|N|S|,|R1|G3|M1|S|R1|G3|M1
+Pallavi|2|2|N|R1|,|G3|M1|P|R1|G3|M1|P
+Pallavi|2|3|N|G3|,|M1|P|D1|G3|M1|P|D1
+Pallavi|2|4|N|M1|,|P|D1|N3|M1|P|D1|N3
+Pallavi|2|5|N|P|,|D1|N3|S'|P|D1|N3|S'
+Pallavi|2|6|N|S'|,|N3|D1|P|S'|N3|D1|P
+Pallavi|2|7|N|N3|,|D1|P|M1|N3|D1|P|M1
+Pallavi|2|8|N|D1|,|P|M1|G3|D1|P|M1|G3
+Pallavi|2|9|N|P|,|M1|G3|R1|P|M1|G3|R1
+Pallavi|2|10|N|M1|,|G3|R1|S|M1|G3|R1|S

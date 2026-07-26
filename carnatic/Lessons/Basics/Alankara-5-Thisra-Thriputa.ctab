@@ -1,0 +1,25 @@
+Type|Geetham
+Title|Alankara-5-Thisra-Thriputa
+Ragam|MAyamAlava Gowla
+Melakartha|15
+Thaalam|THRIPUTAI
+Jaathi|THISRA
+Tempo|60
+Composer|
+Language|Sanskrit
+Description|
+AvartamsPerLine|1
+ShowTransitions|False
+MaxCharsPerCell|8
+---
+Section|Speed|Bar|RowType|A1|A2|A3|A4|A5|A6|A7
+Pallavi|1.5|1|N|S|R1|G3|S|R1|G3|M1
+Pallavi|1.5|2|N|R1|G3|M1|R1|G3|M1|P
+Pallavi|1.5|3|N|G3|M1|P|G3|M1|P|D1
+Pallavi|1.5|4|N|M1|P|D1|M1|P|D1|N3
+Pallavi|1.5|5|N|P|D1|N3|P|D1|N3|S'
+Pallavi|1.5|6|N|S'|N3|D1|S'|N3|D1|P
+Pallavi|1.5|7|N|N3|D1|P|N3|D1|P|M1
+Pallavi|1.5|8|N|D1|P|M1|D1|P|M1|G3
+Pallavi|1.5|9|N|P|M1|G3|P|M1|G3|R1
+Pallavi|1.5|10|N|M1|G3|R1|M1|G3|R1|S

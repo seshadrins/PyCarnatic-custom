@@ -1,0 +1,25 @@
+Type|Geetham
+Title|Alankara-6-Khanda-Ata
+Ragam|MAyamAlava Gowla
+Melakartha|15
+Thaalam|ATA
+Jaathi|KHANDA
+Tempo|60
+Composer|
+Language|Sanskrit
+Description|
+AvartamsPerLine|1
+ShowTransitions|False
+MaxCharsPerCell|8
+---
+Section|Speed|Bar|RowType|A1|A2|A3|A4|A5|A6|A7|A8|A9|A10|A11|A12|A13|A14
+Pallavi|2|1|N|S|R1|,|G3|,|S|,|R1|G3|,|M1|,|M1|,
+Pallavi|2|2|N|R1|G3|,|M1|,|R1|,|G3|M1|,|P|,|P|,
+Pallavi|2|3|N|G3|M1|,|P|,|G3|,|M1|P|,|D1|,|D1|,
+Pallavi|2|4|N|M1|P|,|D1|,|M1|,|P|D1|,|N3|,|N3|,
+Pallavi|2|5|N|P|D1|,|N3|,|P|,|D1|N3|,|N3|,|N3|,
+Pallavi|2|6|N|S'|N3|,|D1|,|S'|,|N3|D1|,|P|,|P|,
+Pallavi|2|7|N|N3|D1|,|P|,|N3|,|D1|P|,|M1|,|M1|,
+Pallavi|2|8|N|D1|P|,|M1|,|D1|,|P|M1|,|G3|,|G3|,
+Pallavi|2|9|N|P|M1|,|G3|,|P|,|M1|G3|,|R1|,|R1|,
+Pallavi|2|10|N|M1|G3|,|R1|,|M1|,|G3|R1|,|S|,|S|,
